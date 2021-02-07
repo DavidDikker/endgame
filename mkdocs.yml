@@ -1,0 +1,42 @@
+site_name: Endgame
+site_url: https://endgame.readthedocs.io/
+repo_url: https://github.com/salesforce/endgame/
+theme: material
+use_directory_urls: true
+markdown_extensions:
+    - codehilite
+    - tables
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_source: true
+      watch:
+        - endgame/
+extra_css:
+  - custom.css
+nav:
+  - Home: 'index.md'
+  - Installation: 'installation.md'
+  - Tutorial: 'tutorial.md'
+
+  - "<b>Risks</b>":
+    - CloudWatch: 'risks/cloudwatch.md'
+    - Elastic Block Store (EBS): 'risks/ebs.md'
+    - Elastic Container Registry (ECR): 'risks/ecr.md'
+    - Elastic File System (EFS): 'risks/elasticfilesystem.md'
+    - ElasticSearch: 'risks/elasticsearch.md'
+    - Glacier Vaults: 'risks/glacier.md'
+    - IAM Roles: 'risks/iam.md'
+    - KMS Keys: 'risks/kms.md'
+    - Lambda: 'risks/lambda.md'
+    - Secrets Manager: 'risks/secretsmanager.md'
+    - SES: 'risks/ses.md'
+    - SNS: 'risks/ses.md'
+    - SQS: 'risks/sqs.md'
+
+  - "<b>Contributing</b>":
+    - Contributing: 'contributing/contributing.md'

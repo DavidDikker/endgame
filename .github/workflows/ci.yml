@@ -1,0 +1,31 @@
+name: continuous-integration
+
+on: [push, pull_request]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          make setup-dev
+
+      - name: Run pytest (unit tests) and bandit (security test)
+        run: |
+          make security-test
+          make test
+
+      - name: Install the package to make sure nothing is randomly broken
+        run: |
+          make install
+
+#      - name: pylint
+#        run: |
+#          make lint
