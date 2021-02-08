@@ -136,39 +136,6 @@ class CloudwatchResourcePolicies(ResourceTypes):
         self.resource_type = "resource-policy"
 
     @property
-    def resources(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("describe_resource_policies")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["resourcePolicies"]
-            for resource in these_resources:
-                name = resource.get("policyName")
-                resources.append(name)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    # TODO: There is no ARN format for CloudWatch Resource Policies. Gotta figure out how to handle this.
-    @property
-    def arns(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("describe_resource_policies")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["resourcePolicies"]
-            for resource in these_resources:
-                name = resource.get("policyName")
-                resources.append(name)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    @property
     def resources_v2(self):
         """Get a list of these resources"""
         resources = []
@@ -179,11 +146,11 @@ class CloudwatchResourcePolicies(ResourceTypes):
             these_resources = page["resourcePolicies"]
             for resource in these_resources:
                 name = resource.get("policyName")
-                arn = ""
+                # This is not a real ARN.
+                # We made it up because AWS doesn't have ARNs for CloudWatch resource policies ¯\_(ツ)_/¯
+                arn = f"arn:aws:logs:{self.region}:{self.current_account_id}:resource-policy:{name}"
                 list_resources_response = ListResourcesResponse(
                     service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
                     resource_type=self.resource_type, name=name)
                 resources.append(list_resources_response)
-        # resources = list(dict.fromkeys(resources))  # remove duplicates
-        # resources.sort()
         return resources

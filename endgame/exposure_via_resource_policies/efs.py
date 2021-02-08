@@ -61,42 +61,6 @@ class ElasticFileSystems(ResourceTypes):
         self.resource_type = "file-system"
 
     @property
-    def resources(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("describe_file_systems")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["FileSystems"]
-            for resource in these_resources:
-                fs_id = resource.get("FileSystemId")
-                arn = resource.get("FileSystemArn")
-                # Append the path to the list so we can rebuild the ARN later, but remove the leading /
-                resources.append(fs_id)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    @property
-    def arns(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("describe_file_systems")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["FileSystems"]
-            for resource in these_resources:
-                fs_id = resource.get("FileSystemId")
-                arn = resource.get("FileSystemArn")
-                # Append the path to the list so we can rebuild the ARN later, but remove the leading /
-                resources.append(arn)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    @property
     def resources_v2(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []

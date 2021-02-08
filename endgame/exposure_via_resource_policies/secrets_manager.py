@@ -56,41 +56,6 @@ class SecretsManagerSecrets(ResourceTypes):
         self.resource_type = "secret"
 
     @property
-    def resources(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("list_secrets")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["SecretList"]
-            for resource in these_resources:
-                name = resource.get("Name")
-                arn = resource.get("ARN")
-                # Append the path to the list so we can rebuild the ARN later, but remove the leading /
-                resources.append(name)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    @property
-    def arns(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("list_secrets")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["SecretList"]
-            for resource in these_resources:
-                name = resource.get("Name")
-                arn = resource.get("ARN")
-                resources.append(arn)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    @property
     def resources_v2(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
@@ -102,10 +67,8 @@ class SecretsManagerSecrets(ResourceTypes):
             for resource in these_resources:
                 name = resource.get("Name")
                 arn = resource.get("ARN")
-                resources.append(name)
                 list_resources_response = ListResourcesResponse(
                     service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
                     resource_type=self.resource_type, name=name)
                 resources.append(list_resources_response)
-
         return resources

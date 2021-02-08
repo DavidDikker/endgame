@@ -114,28 +114,6 @@ class LambdaLayers(ResourceTypes):
         self.resource_type = "layer"
 
     @property
-    def resources(self):
-        """Get a list of these resources"""
-        resources = []
-
-        layers = self.layers
-        for layer_name in layers:
-            versions = self.layer_versions(layer_name)
-            resources.extend(versions)
-        return resources
-
-    @property
-    def arns(self):
-        """Get a list of these resources"""
-        resources = []
-
-        layers = self.layers
-        for layer_name in layers:
-            versions = self.layer_version_arns(layer_name)
-            resources.extend(versions)
-        return resources
-
-    @property
     def layers(self):
         """Get a list of these resources"""
         resources = []
@@ -147,23 +125,6 @@ class LambdaLayers(ResourceTypes):
             for layer in layers:
                 name = layer.get("LayerName")
                 arn = layer.get("LayerArn")
-                resources.append(name)
-        return resources
-
-    def layer_versions(self, layer_name):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator('list_layer_versions')
-        page_iterator = paginator.paginate(
-            LayerName=layer_name
-        )
-        for page in page_iterator:
-            layers = page["LayerVersions"]
-            for layer in layers:
-                version = layer.get("Version")
-                layer_version_arn = layer.get("LayerVersionArn")
-                name = get_resource_path_from_arn(layer_version_arn)
                 resources.append(name)
         return resources
 

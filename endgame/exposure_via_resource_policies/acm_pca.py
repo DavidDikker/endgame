@@ -146,30 +146,6 @@ class AcmPrivateCertificateAuthorities(ResourceTypes):
         self.resource_type = "certificate-authority"
 
     @property
-    def resources(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("list_certificate_authorities")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["CertificateAuthorities"]
-            for resource in these_resources:
-                arn = resource.get("Arn")
-                status = resource.get("Status")
-                ca_type = resource.get("Type")
-                if status == "ACTIVE":
-                    resources.append(arn)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    @property
-    def arns(self):
-        """Get a list of these resources"""
-        return self.resources
-
-    @property
     def resources_v2(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []

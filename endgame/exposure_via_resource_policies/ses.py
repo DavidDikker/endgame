@@ -102,38 +102,7 @@ class SesIdentityPolicies(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
         self.service = "ses"
-        self.resource_type = "certificate-authority"
-
-    @property
-    def resources(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("list_identities")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["Identities"]
-            for resource in these_resources:
-                resources.append(resource)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    @property
-    def arns(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("list_identities")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page["Identities"]
-            for resource in these_resources:
-                arn = f"arn:aws:ses:{self.region}:{self.current_account_id}:identity/{resource}"
-                resources.append(arn)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
+        self.resource_type = "identity"
 
     @property
     def resources_v2(self) -> list[ListResourcesResponse]:
@@ -145,6 +114,7 @@ class SesIdentityPolicies(ResourceTypes):
         for page in page_iterator:
             these_resources = page["Identities"]
             for resource in these_resources:
+                arn = f"arn:aws:ses:{self.region}:{self.current_account_id}:identity/{resource}"
                 list_resources_response = ListResourcesResponse(
                     service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
                     resource_type=self.resource_type, name=resource)

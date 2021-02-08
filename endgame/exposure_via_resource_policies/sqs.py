@@ -139,51 +139,8 @@ class SqsQueue(ResourceType, ABC):
 class SqsQueues(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
-        self.service = "acm-pca"
-        self.resource_type = "certificate-authority"
-
-    @property
-    def resources(self):
-        """Get a list of these resources"""
-        resources = []
-
-        paginator = self.client.get_paginator("list_queues")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page.get("QueueUrls")
-            if these_resources:
-                for resource in these_resources:
-                    # queue URL takes the format:
-                    # "https://{REGION_ENDPOINT}/queue.|api-domain|/{YOUR_ACCOUNT_NUMBER}/{YOUR_QUEUE_NAME}"
-                    # Let's split it according to /, and the name is the last item on the list
-                    queue_url = resource
-                    name = queue_url.split("/")[-1]
-                    resources.append(name)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
-        return resources
-
-    @property
-    def arns(self):
-        """Get a list of these resources"""
-        arns = []
-
-        paginator = self.client.get_paginator("list_queues")
-        page_iterator = paginator.paginate()
-        for page in page_iterator:
-            these_resources = page.get("QueueUrls")
-            if these_resources:
-                for resource in these_resources:
-                    # queue URL takes the format:
-                    # "https://{REGION_ENDPOINT}/queue.|api-domain|/{YOUR_ACCOUNT_NUMBER}/{YOUR_QUEUE_NAME}"
-                    # Let's split it according to /, and the name is the last item on the list
-                    queue_url = resource
-                    name = queue_url.split("/")[-1]
-                    arn = f"arn:aws:sqs:{self.region}:{self.current_account_id}:{name}"
-                    arns.append(arn)
-        arns = list(dict.fromkeys(arns))  # remove duplicates
-        arns.sort()
-        return arns
+        self.service = "sqs"
+        self.resource_type = "queue"
 
     @property
     def resources_v2(self) -> list[ListResourcesResponse]:

@@ -62,11 +62,11 @@ def list_resources(service, profile, region, verbosity):
     sts_client = get_boto3_client(profile=profile, service="sts", region=region)
     current_account_id = get_current_account_id(sts_client=sts_client)
     if provided_service == "all":
-        for some_service in constants.SUPPORTED_AWS_SERVICES:
-            service = utils.get_service_translation(provided_service=some_service)
-            if service != "all":
-                client = get_boto3_client(profile=profile, service=service, region=region)
-                result = list_resources_by_service(provided_service=service, region=region, current_account_id=current_account_id, client=client)
+        for supported_service in constants.SUPPORTED_AWS_SERVICES:
+            if supported_service != "all":
+                translated_service = utils.get_service_translation(provided_service=supported_service)
+                client = get_boto3_client(profile=profile, service=translated_service, region=region)
+                result = list_resources_by_service(provided_service=supported_service, region=region, current_account_id=current_account_id, client=client)
                 if result:
                     if result.resources_v2:
                         results.extend(result.resources_v2)
@@ -89,38 +89,37 @@ def list_resources_by_service(
         current_account_id: str,
         client: boto3.Session.client,
 ):
-    service = provided_service
     resources = None
 
-    if service == "s3":
-        resources = s3.S3Buckets(client=client, current_account_id=current_account_id, region=region)
-    elif service == "iam":
-        resources = iam.IAMRoles(client=client, current_account_id=current_account_id, region=region)
-    elif service == "efs":
-        resources = efs.ElasticFileSystems(client=client, current_account_id=current_account_id, region=region)
-    elif service == "secretsmanager":
-        resources = secrets_manager.SecretsManagerSecrets(client=client, current_account_id=current_account_id, region=region)
-    elif service == "ecr":
-        resources = ecr.EcrRepositories(client=client, current_account_id=current_account_id, region=region)
-    elif service == "sns":
-        resources = sns.SnsTopics(client=client, current_account_id=current_account_id, region=region)
-    elif service == "sqs":
-        resources = sqs.SqsQueues(client=client, current_account_id=current_account_id, region=region)
-    elif service == "logs":
-        resources = cloudwatch_logs.CloudwatchResourcePolicies(client=client, current_account_id=current_account_id, region=region)
-    elif service == "kms":
-        resources = kms.KmsKeys(client=client, current_account_id=current_account_id, region=region)
-    elif service == "glacier":
-        resources = glacier_vault.GlacierVaults(client=client, current_account_id=current_account_id, region=region)
-    elif service == "acm-pca":
+    if provided_service == "acm-pca":
         resources = acm_pca.AcmPrivateCertificateAuthorities(client=client, current_account_id=current_account_id, region=region)
-    elif service == "ses":
-        resources = ses.SesIdentityPolicies(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "ecr":
+        resources = ecr.EcrRepositories(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "efs":
+        resources = efs.ElasticFileSystems(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "elasticsearch":
         resources = elasticsearch.ElasticSearchDomains(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "glacier":
+        resources = glacier_vault.GlacierVaults(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "iam":
+        resources = iam.IAMRoles(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "kms":
+        resources = kms.KmsKeys(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "lambda":
         resources = lambda_function.LambdaFunctions(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "lambda-layer":
         resources = lambda_layer.LambdaLayers(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "cloudwatch":
+        resources = cloudwatch_logs.CloudwatchResourcePolicies(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "s3":
+        resources = s3.S3Buckets(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "ses":
+        resources = ses.SesIdentityPolicies(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "sns":
+        resources = sns.SnsTopics(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "sqs":
+        resources = sqs.SqsQueues(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "secretsmanager":
+        resources = secrets_manager.SecretsManagerSecrets(client=client, current_account_id=current_account_id, region=region)
 
     return resources

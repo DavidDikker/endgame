@@ -54,24 +54,6 @@ class S3Buckets(ResourceTypes):
         self.resource_type = "bucket"
 
     @property
-    def resources(self):
-        """Get a list of these resources"""
-        response = self.client.list_buckets()
-        resources = []
-        for resource in response.get("Buckets"):
-            resources.append(resource.get("Name"))
-        return resources
-
-    @property
-    def arns(self):
-        """Get a list of these resources"""
-        response = self.client.list_buckets()
-        resources = []
-        for resource in response.get("Buckets"):
-            resources.append(f"arn:aws:s3:::{resource.get('Name')}")
-        return resources
-
-    @property
     def resources_v2(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         response = self.client.list_buckets()
