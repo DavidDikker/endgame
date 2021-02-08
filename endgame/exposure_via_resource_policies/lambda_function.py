@@ -9,6 +9,7 @@ from endgame.exposure_via_resource_policies.common import ResourceType, Resource
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
 from endgame.shared.utils import get_sid_names_with_error_handling
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,8 @@ class LambdaFunction(ResourceType, ABC):
 class LambdaFunctions(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "lambda"
+        self.resource_type = "function"
 
     @property
     def resources(self):
@@ -124,4 +127,22 @@ class LambdaFunctions(ResourceTypes):
                 name = function.get("FunctionName")
                 arn = function.get("FunctionArn")
                 resources.append(arn)
+        return resources
+
+    @property
+    def resources_v2(self) -> list[ListResourcesResponse]:
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator('list_functions')
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            functions = page["Functions"]
+            for function in functions:
+                name = function.get("FunctionName")
+                arn = function.get("FunctionArn")
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=name)
+                resources.append(list_resources_response)
         return resources

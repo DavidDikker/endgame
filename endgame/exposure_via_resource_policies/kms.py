@@ -4,9 +4,11 @@ import boto3
 import botocore
 from abc import ABC
 from botocore.exceptions import ClientError
+from policy_sentry.util.arns import get_account_from_arn, get_resource_path_from_arn
 from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +76,8 @@ class KmsKey(ResourceType, ABC):
 class KmsKeys(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "kms"
+        self.resource_type = "key"
 
     @property
     def resources(self):
@@ -167,5 +171,61 @@ class KmsKeys(ResourceTypes):
         keys = filter_with_aliases(key_ids)
         resources = list(dict.fromkeys(keys))  # remove duplicates
         resources.sort()
+        return resources
+
+
+    @property
+    def resources_v2(self) -> list[ListResourcesResponse]:
+        """Get a list of these resources"""
+
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Paginator.ListKeys
+        def list_keys() -> list:
+            keys = []
+            paginator = self.client.get_paginator("list_keys")
+            page_iterator = paginator.paginate()
+            for page in page_iterator:
+                these_resources = page["Keys"]
+                for resource in these_resources:
+                    key_id = resource.get("KeyId")
+                    arn = resource.get("KeyArn")
+                    keys.append(arn)
+            return keys
+
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Paginator.ListAliases
+        def filter_with_aliases(all_key_arns) -> list:
+            keys = []
+            key_arns_with_aliases = []
+            aws_managed_key_arns = []
+            paginator = self.client.get_paginator("list_aliases")
+            page_iterator = paginator.paginate()
+            for page in page_iterator:
+                these_resources = page["Aliases"]
+                for resource in these_resources:
+                    alias = resource.get("AliasName")
+                    key_id = resource.get("TargetKeyId")
+                    arn = resource.get("AliasArn")
+                    if alias.startswith("alias/aws") or alias.startswith("aws/"):
+                        aws_managed_key_arns.append(arn)
+                        continue
+                    else:
+                        # keys.append(alias)
+                        arn = f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{key_id}"
+                        list_resources_response = ListResourcesResponse(
+                            service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                            resource_type=self.resource_type, name=key_id, note=alias)
+                        keys.append(list_resources_response)
+                        key_arns_with_aliases.append(arn)
+            # If the key does not have an alias, return the key ID
+            for some_key_arn in all_key_arns:
+                if some_key_arn not in key_arns_with_aliases and some_key_arn not in aws_managed_key_arns:
+                    key_id = get_resource_path_from_arn(some_key_arn)
+                    arn = f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{key_id}"
+                    list_resources_response = ListResourcesResponse(
+                        service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                        resource_type=self.resource_type, name=key_id)
+                    keys.append(list_resources_response)
+            return keys
+        key_ids = list_keys()
+        resources = filter_with_aliases(key_ids)
         return resources
 

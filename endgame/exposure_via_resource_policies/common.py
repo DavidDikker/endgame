@@ -4,6 +4,7 @@ import boto3
 import copy
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 
 class ResourceType(object):
@@ -111,3 +112,8 @@ class ResourceTypes(object):
     @abstractmethod
     def resources(self) -> list:
         raise NotImplementedError("Must override property 'resources'")
+
+    @property
+    @abstractmethod
+    def resources_v2(self) -> list[ListResourcesResponse]:
+        raise NotImplementedError("Must override property 'resources_v2'")

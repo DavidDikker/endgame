@@ -68,23 +68,19 @@ def list_resources(service, profile, region, verbosity):
                 client = get_boto3_client(profile=profile, service=service, region=region)
                 result = list_resources_by_service(provided_service=service, region=region, current_account_id=current_account_id, client=client)
                 if result:
-                    results.extend(result.arns)
+                    if result.resources_v2:
+                        results.extend(result.resources_v2)
     else:
         client = get_boto3_client(profile=profile, service=service, region=region)
         result = list_resources_by_service(provided_service=service, region=region, current_account_id=current_account_id, client=client)
-        results.extend(result.arns)
+        results.extend(result.resources_v2)
 
+    # Print the results
     if len(results) == 0:
         logger.warning("There are no resources given the criteria provided.")
     else:
-        for arn in results:
-            print(arn)
-    # Print the results
-    # if len(resources.resources) == 0:
-    #     logger.warning("There are no resources given the criteria provided.")
-    #     # print(f"There are no resources given the criteria provided.")
-    # for resource_name in resources.resources:
-    #     print(resource_name)
+        for resource in results:
+            print(resource.arn)
 
 
 def list_resources_by_service(
@@ -92,7 +88,6 @@ def list_resources_by_service(
         region: str,
         current_account_id: str,
         client: boto3.Session.client,
-
 ):
     service = provided_service
     resources = None

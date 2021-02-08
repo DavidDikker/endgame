@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,8 @@ class ElasticSearchDomain(ResourceType, ABC):
 class ElasticSearchDomains(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "elasticsearch"
+        self.resource_type = "domain"
 
     @property
     def resources(self):
@@ -84,3 +87,20 @@ class ElasticSearchDomains(ResourceTypes):
         arns = list(dict.fromkeys(arns))  # remove duplicates
         arns.sort()
         return arns
+
+    @property
+    def resources_v2(self):
+        """Get a list of these resources"""
+        resources = []
+
+        response = self.client.list_domain_names()
+        if response.get("DomainNames"):
+            for domain_name in response.get("DomainNames"):
+                name = domain_name.get("DomainName")
+                arn = f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{name}"
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=name)
+                # resources.append(domain_name.get("DomainName"))
+                resources.append(list_resources_response)
+        return resources

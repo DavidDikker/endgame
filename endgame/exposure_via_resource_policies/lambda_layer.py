@@ -10,6 +10,7 @@ from endgame.exposure_via_resource_policies.common import ResourceType, Resource
 from endgame.shared import constants
 from endgame.shared.utils import get_sid_names_with_error_handling
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -106,10 +107,11 @@ class LambdaLayer(ResourceType, ABC):
         return response_message
 
 
-
 class LambdaLayers(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "lambda"
+        self.resource_type = "layer"
 
     @property
     def resources(self):
@@ -180,4 +182,19 @@ class LambdaLayers(ResourceTypes):
                 layer_version_arn = layer.get("LayerVersionArn")
                 # name = get_resource_path_from_arn(layer_version_arn)
                 resources.append(layer_version_arn)
+        return resources
+
+    @property
+    def resources_v2(self) -> list[ListResourcesResponse]:
+        """Get a list of these resources"""
+        resources = []
+
+        layers = self.layers
+        for layer_name in layers:
+            layer_arns = self.layer_version_arns(layer_name)
+            for arn in layer_arns:
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=layer_name)
+                resources.append(list_resources_response)
         return resources

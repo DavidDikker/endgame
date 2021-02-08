@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,8 @@ class ElasticFileSystem(ResourceType, ABC):
 class ElasticFileSystems(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "elasticfilesystem"
+        self.resource_type = "file-system"
 
     @property
     def resources(self):
@@ -67,10 +70,10 @@ class ElasticFileSystems(ResourceTypes):
         for page in page_iterator:
             these_resources = page["FileSystems"]
             for resource in these_resources:
-                id = resource.get("FileSystemId")
+                fs_id = resource.get("FileSystemId")
                 arn = resource.get("FileSystemArn")
                 # Append the path to the list so we can rebuild the ARN later, but remove the leading /
-                resources.append(id)
+                resources.append(fs_id)
         resources = list(dict.fromkeys(resources))  # remove duplicates
         resources.sort()
         return resources
@@ -85,10 +88,28 @@ class ElasticFileSystems(ResourceTypes):
         for page in page_iterator:
             these_resources = page["FileSystems"]
             for resource in these_resources:
-                id = resource.get("FileSystemId")
+                fs_id = resource.get("FileSystemId")
                 arn = resource.get("FileSystemArn")
                 # Append the path to the list so we can rebuild the ARN later, but remove the leading /
                 resources.append(arn)
         resources = list(dict.fromkeys(resources))  # remove duplicates
         resources.sort()
+        return resources
+
+    @property
+    def resources_v2(self) -> list[ListResourcesResponse]:
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator("describe_file_systems")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            these_resources = page["FileSystems"]
+            for resource in these_resources:
+                fs_id = resource.get("FileSystemId")
+                arn = resource.get("FileSystemArn")
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=fs_id)
+                resources.append(list_resources_response)
         return resources

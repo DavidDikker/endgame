@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,8 @@ class SecretsManagerSecret(ResourceType, ABC):
 class SecretsManagerSecrets(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "secretsmanager"
+        self.resource_type = "secret"
 
     @property
     def resources(self):
@@ -87,3 +90,22 @@ class SecretsManagerSecrets(ResourceTypes):
         resources.sort()
         return resources
 
+    @property
+    def resources_v2(self) -> list[ListResourcesResponse]:
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator("list_secrets")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            these_resources = page["SecretList"]
+            for resource in these_resources:
+                name = resource.get("Name")
+                arn = resource.get("ARN")
+                resources.append(name)
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=name)
+                resources.append(list_resources_response)
+
+        return resources

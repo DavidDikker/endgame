@@ -10,6 +10,7 @@ from endgame.exposure_via_resource_policies.common import ResourceType, Resource
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.utils import get_sid_names_with_error_handling
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -138,6 +139,8 @@ class SqsQueue(ResourceType, ABC):
 class SqsQueues(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "acm-pca"
+        self.resource_type = "certificate-authority"
 
     @property
     def resources(self):
@@ -181,3 +184,26 @@ class SqsQueues(ResourceTypes):
         arns = list(dict.fromkeys(arns))  # remove duplicates
         arns.sort()
         return arns
+
+    @property
+    def resources_v2(self) -> list[ListResourcesResponse]:
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator("list_queues")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            these_resources = page.get("QueueUrls")
+            if these_resources:
+                for resource in these_resources:
+                    # queue URL takes the format:
+                    # "https://{REGION_ENDPOINT}/queue.|api-domain|/{YOUR_ACCOUNT_NUMBER}/{YOUR_QUEUE_NAME}"
+                    # Let's split it according to /, and the name is the last item on the list
+                    queue_url = resource
+                    name = queue_url.split("/")[-1]
+                    arn = f"arn:aws:sqs:{self.region}:{self.current_account_id}:{name}"
+                    list_resources_response = ListResourcesResponse(
+                        service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                        resource_type=self.resource_type, name=name, note=queue_url)
+                    resources.append(list_resources_response)
+        return resources

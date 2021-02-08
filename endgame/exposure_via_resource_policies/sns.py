@@ -10,6 +10,7 @@ from endgame.exposure_via_resource_policies.common import ResourceType, Resource
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.utils import get_sid_names_with_error_handling
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +144,8 @@ class SnsTopic(ResourceType, ABC):
 class SnsTopics(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "sns"
+        self.resource_type = "topic"
 
     @property
     def resources(self):
@@ -173,3 +176,21 @@ class SnsTopics(ResourceTypes):
                 # name = get_resource_string(arn)
                 arns.append(arn)
         return arns
+
+    @property
+    def resources_v2(self) -> list[ListResourcesResponse]:
+        """Get a list of these resources"""
+        these_resources = []
+
+        paginator = self.client.get_paginator('list_topics')
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            resources = page["Topics"]
+            for resource in resources:
+                arn = resource.get("TopicArn")
+                name = get_resource_string(arn)
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=name)
+                these_resources.append(list_resources_response)
+        return these_resources
