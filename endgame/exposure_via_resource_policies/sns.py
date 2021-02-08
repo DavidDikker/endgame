@@ -148,7 +148,7 @@ class SnsTopics(ResourceTypes):
         self.resource_type = "topic"
 
     @property
-    def resources_v2(self) -> list[ListResourcesResponse]:
+    def resources(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         these_resources = []
 

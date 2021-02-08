@@ -56,7 +56,7 @@ class SecretsManagerSecrets(ResourceTypes):
         self.resource_type = "secret"
 
     @property
-    def resources_v2(self) -> list[ListResourcesResponse]:
+    def resources(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 

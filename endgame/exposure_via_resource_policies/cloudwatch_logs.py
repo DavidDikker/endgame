@@ -136,7 +136,7 @@ class CloudwatchResourcePolicies(ResourceTypes):
         self.resource_type = "resource-policy"
 
     @property
-    def resources_v2(self):
+    def resources(self):
         """Get a list of these resources"""
         resources = []
 

@@ -105,7 +105,7 @@ class SesIdentityPolicies(ResourceTypes):
         self.resource_type = "identity"
 
     @property
-    def resources_v2(self) -> list[ListResourcesResponse]:
+    def resources(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 

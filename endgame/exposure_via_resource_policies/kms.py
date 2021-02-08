@@ -80,7 +80,7 @@ class KmsKeys(ResourceTypes):
         self.resource_type = "key"
 
     @property
-    def resources_v2(self) -> list[ListResourcesResponse]:
+    def resources(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
 
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Paginator.ListKeys

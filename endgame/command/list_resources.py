@@ -68,12 +68,12 @@ def list_resources(service, profile, region, verbosity):
                 client = get_boto3_client(profile=profile, service=translated_service, region=region)
                 result = list_resources_by_service(provided_service=supported_service, region=region, current_account_id=current_account_id, client=client)
                 if result:
-                    if result.resources_v2:
-                        results.extend(result.resources_v2)
+                    if result.resources:
+                        results.extend(result.resources)
     else:
         client = get_boto3_client(profile=profile, service=service, region=region)
         result = list_resources_by_service(provided_service=service, region=region, current_account_id=current_account_id, client=client)
-        results.extend(result.resources_v2)
+        results.extend(result.resources)
 
     # Print the results
     if len(results) == 0:

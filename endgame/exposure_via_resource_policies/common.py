@@ -106,9 +106,9 @@ class ResourceTypes(object):
         self.region = region
 
     def __str__(self):
-        return '%s' % (json.dumps(self.resources_v2.arn))
+        return '%s' % (json.dumps(self.resources.arn))
 
     @property
     @abstractmethod
-    def resources_v2(self) -> list[ListResourcesResponse]:
-        raise NotImplementedError("Must override property 'resources_v2'")
+    def resources(self) -> list[ListResourcesResponse]:
+        raise NotImplementedError("Must override property 'resources'")
