@@ -147,16 +147,37 @@ class SqsQueues(ResourceTypes):
         paginator = self.client.get_paginator("list_queues")
         page_iterator = paginator.paginate()
         for page in page_iterator:
-            these_resources = page["QueueUrls"]
-            for resource in these_resources:
-                # queue URL takes the format:
-                # "https://{REGION_ENDPOINT}/queue.|api-domain|/{YOUR_ACCOUNT_NUMBER}/{YOUR_QUEUE_NAME}"
-                # Let's split it according to /, and the name is the last item on the list
-                queue_url = resource
-                name = queue_url.split("/")[-1]
-                # Append the path to the list so we can rebuild the ARN later, but remove the leading /
-                resources.append(name)
+            these_resources = page.get("QueueUrls")
+            if these_resources:
+                for resource in these_resources:
+                    # queue URL takes the format:
+                    # "https://{REGION_ENDPOINT}/queue.|api-domain|/{YOUR_ACCOUNT_NUMBER}/{YOUR_QUEUE_NAME}"
+                    # Let's split it according to /, and the name is the last item on the list
+                    queue_url = resource
+                    name = queue_url.split("/")[-1]
+                    resources.append(name)
         resources = list(dict.fromkeys(resources))  # remove duplicates
         resources.sort()
         return resources
 
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        arns = []
+
+        paginator = self.client.get_paginator("list_queues")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            these_resources = page.get("QueueUrls")
+            if these_resources:
+                for resource in these_resources:
+                    # queue URL takes the format:
+                    # "https://{REGION_ENDPOINT}/queue.|api-domain|/{YOUR_ACCOUNT_NUMBER}/{YOUR_QUEUE_NAME}"
+                    # Let's split it according to /, and the name is the last item on the list
+                    queue_url = resource
+                    name = queue_url.split("/")[-1]
+                    arn = f"arn:aws:sqs:{self.region}:{self.current_account_id}:{name}"
+                    arns.append(arn)
+        arns = list(dict.fromkeys(arns))  # remove duplicates
+        arns.sort()
+        return arns

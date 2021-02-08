@@ -122,3 +122,50 @@ class KmsKeys(ResourceTypes):
         resources.sort()
         return resources
 
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Paginator.ListKeys
+        def list_keys() -> list:
+            keys = []
+            paginator = self.client.get_paginator("list_keys")
+            page_iterator = paginator.paginate()
+            for page in page_iterator:
+                these_resources = page["Keys"]
+                for resource in these_resources:
+                    key_id = resource.get("KeyId")
+                    arn = resource.get("KeyArn")
+                    keys.append(arn)
+            return keys
+
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Paginator.ListAliases
+        def filter_with_aliases(all_key_ids) -> list:
+            keys = []
+            key_ids_with_aliases = []
+            aws_managed_key_ids = []
+            paginator = self.client.get_paginator("list_aliases")
+            page_iterator = paginator.paginate()
+            for page in page_iterator:
+                these_resources = page["Aliases"]
+                for resource in these_resources:
+                    alias = resource.get("AliasName")
+                    key_id = resource.get("TargetKeyId")
+                    arn = resource.get("AliasArn")
+                    if alias.startswith("alias/aws") or alias.startswith("aws/"):
+                        aws_managed_key_ids.append(arn)
+                        continue
+                    else:
+                        keys.append(alias)
+                        key_ids_with_aliases.append(arn)
+            # If the key does not have an alias, return the key ID
+            for some_key_id in all_key_ids:
+                if some_key_id not in key_ids_with_aliases and some_key_id not in aws_managed_key_ids:
+                    keys.append(some_key_id)
+            return keys
+        key_ids = list_keys()
+        keys = filter_with_aliases(key_ids)
+        resources = list(dict.fromkeys(keys))  # remove duplicates
+        resources.sort()
+        return resources
+

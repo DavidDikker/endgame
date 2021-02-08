@@ -67,3 +67,20 @@ class ElasticSearchDomains(ResourceTypes):
         resources.sort()
         return resources
 
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        domain_names = []
+        arns = []
+        response = self.client.list_domain_names()
+        if response.get("DomainNames"):
+            for domain_name in response.get("DomainNames"):
+                domain_names.append(domain_name.get("DomainName"))
+        if domain_names:
+            response = self.client.describe_elasticsearch_domains(DomainNames=domain_names)
+            for domain_status in response.get("DomainStatusList"):
+                arns.append(domain_status.get("ARN"))
+
+        arns = list(dict.fromkeys(arns))  # remove duplicates
+        arns.sort()
+        return arns

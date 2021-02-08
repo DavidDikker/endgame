@@ -70,3 +70,20 @@ class SecretsManagerSecrets(ResourceTypes):
         resources.sort()
         return resources
 
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator("list_secrets")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            these_resources = page["SecretList"]
+            for resource in these_resources:
+                name = resource.get("Name")
+                arn = resource.get("ARN")
+                resources.append(arn)
+        resources = list(dict.fromkeys(resources))  # remove duplicates
+        resources.sort()
+        return resources
+

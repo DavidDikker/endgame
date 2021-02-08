@@ -147,3 +147,20 @@ class CloudwatchResourcePolicies(ResourceTypes):
         resources = list(dict.fromkeys(resources))  # remove duplicates
         resources.sort()
         return resources
+
+    # TODO: There is no ARN format for CloudWatch Resource Policies. Gotta figure out how to handle this.
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator("describe_resource_policies")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            these_resources = page["resourcePolicies"]
+            for resource in these_resources:
+                name = resource.get("policyName")
+                resources.append(name)
+        resources = list(dict.fromkeys(resources))  # remove duplicates
+        resources.sort()
+        return resources

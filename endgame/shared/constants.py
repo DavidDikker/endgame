@@ -1,5 +1,6 @@
 import copy
 SUPPORTED_AWS_SERVICES = [
+  "all",
   "acm-pca",
   "ecr",
   "efs",

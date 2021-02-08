@@ -158,3 +158,18 @@ class SnsTopics(ResourceTypes):
                 name = get_resource_string(arn)
                 these_resources.append(name)
         return these_resources
+
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        arns = []
+
+        paginator = self.client.get_paginator('list_topics')
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            resources = page["Topics"]
+            for resource in resources:
+                arn = resource.get("TopicArn")
+                # name = get_resource_string(arn)
+                arns.append(arn)
+        return arns

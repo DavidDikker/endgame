@@ -59,3 +59,11 @@ class S3Buckets(ResourceTypes):
             resources.append(resource.get("Name"))
         return resources
 
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        response = self.client.list_buckets()
+        resources = []
+        for resource in response.get("Buckets"):
+            resources.append(f"arn:aws:s3:::{resource.get('Name')}")
+        return resources

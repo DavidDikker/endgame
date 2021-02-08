@@ -3,6 +3,7 @@ List exposable resources
 """
 import logging
 import click
+import boto3
 from endgame import set_log_level
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared.validate import click_validate_supported_aws_service
@@ -55,12 +56,46 @@ def list_resources(service, profile, region, verbosity):
     resources = []
     # User-supplied arguments like `cloudwatch` need to be translated to the IAM name like `logs`
     provided_service = service
-    service = utils.get_service_translation(provided_service=service)
 
+    results = []
     # Get the boto3 clients
-    client = get_boto3_client(profile=profile, service=service, region=region)
     sts_client = get_boto3_client(profile=profile, service="sts", region=region)
     current_account_id = get_current_account_id(sts_client=sts_client)
+    if provided_service == "all":
+        for some_service in constants.SUPPORTED_AWS_SERVICES:
+            service = utils.get_service_translation(provided_service=some_service)
+            if service != "all":
+                client = get_boto3_client(profile=profile, service=service, region=region)
+                result = list_resources_by_service(provided_service=service, region=region, current_account_id=current_account_id, client=client)
+                if result:
+                    results.extend(result.arns)
+    else:
+        client = get_boto3_client(profile=profile, service=service, region=region)
+        result = list_resources_by_service(provided_service=service, region=region, current_account_id=current_account_id, client=client)
+        results.extend(result.arns)
+
+    if len(results) == 0:
+        logger.warning("There are no resources given the criteria provided.")
+    else:
+        for arn in results:
+            print(arn)
+    # Print the results
+    # if len(resources.resources) == 0:
+    #     logger.warning("There are no resources given the criteria provided.")
+    #     # print(f"There are no resources given the criteria provided.")
+    # for resource_name in resources.resources:
+    #     print(resource_name)
+
+
+def list_resources_by_service(
+        provided_service: str,
+        region: str,
+        current_account_id: str,
+        client: boto3.Session.client,
+
+):
+    service = provided_service
+    resources = None
 
     if service == "s3":
         resources = s3.S3Buckets(client=client, current_account_id=current_account_id, region=region)
@@ -93,9 +128,4 @@ def list_resources(service, profile, region, verbosity):
     elif provided_service == "lambda-layer":
         resources = lambda_layer.LambdaLayers(client=client, current_account_id=current_account_id, region=region)
 
-    # Print the results
-    if len(resources.resources) == 0:
-        logger.warning("There are no resources given the criteria provided.")
-        # print(f"There are no resources given the criteria provided.")
-    for resource_name in resources.resources:
-        print(resource_name)
+    return resources

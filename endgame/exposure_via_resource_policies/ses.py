@@ -116,3 +116,19 @@ class SesIdentityPolicies(ResourceTypes):
         resources.sort()
         return resources
 
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator("list_identities")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            these_resources = page["Identities"]
+            for resource in these_resources:
+                arn = f"arn:aws:ses:{self.region}:{self.current_account_id}:identity/{resource}"
+                resources.append(arn)
+        resources = list(dict.fromkeys(resources))  # remove duplicates
+        resources.sort()
+        return resources
+

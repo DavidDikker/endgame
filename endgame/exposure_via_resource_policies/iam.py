@@ -69,6 +69,7 @@ class IAMRoles(ResourceTypes):
             roles = page["Roles"]
             for role in roles:
                 path = role.get("Path")
+                arn = role.get("Arn")
                 name = role.get("RoleName")
                 # Special case: Ignore Service Linked Roles
                 if path == "/service-role/" or path.startswith("/aws-service-role/"):
@@ -78,4 +79,25 @@ class IAMRoles(ResourceTypes):
         resources = list(dict.fromkeys(resources))  # remove duplicates
         resources.sort()
         return resources
+
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        arns = []
+
+        paginator = self.client.get_paginator("list_roles")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            roles = page["Roles"]
+            for role in roles:
+                path = role.get("Path")
+                arn = role.get("Arn")
+                name = role.get("RoleName")
+                # Special case: Ignore Service Linked Roles
+                if path == "/service-role/" or path.startswith("/aws-service-role/"):
+                    continue
+                arns.append(arn)
+        arns = list(dict.fromkeys(arns))  # remove duplicates
+        arns.sort()
+        return arns
 

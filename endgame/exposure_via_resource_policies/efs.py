@@ -75,3 +75,20 @@ class ElasticFileSystems(ResourceTypes):
         resources.sort()
         return resources
 
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator("describe_file_systems")
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            these_resources = page["FileSystems"]
+            for resource in these_resources:
+                id = resource.get("FileSystemId")
+                arn = resource.get("FileSystemArn")
+                # Append the path to the list so we can rebuild the ARN later, but remove the leading /
+                resources.append(arn)
+        resources = list(dict.fromkeys(resources))  # remove duplicates
+        resources.sort()
+        return resources

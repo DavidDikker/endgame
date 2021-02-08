@@ -110,3 +110,18 @@ class LambdaFunctions(ResourceTypes):
                 arn = function.get("FunctionArn")
                 resources.append(name)
         return resources
+
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        resources = []
+
+        paginator = self.client.get_paginator('list_functions')
+        page_iterator = paginator.paginate()
+        for page in page_iterator:
+            functions = page["Functions"]
+            for function in functions:
+                name = function.get("FunctionName")
+                arn = function.get("FunctionArn")
+                resources.append(arn)
+        return resources

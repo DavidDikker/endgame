@@ -160,3 +160,8 @@ class AcmPrivateCertificateAuthorities(ResourceTypes):
         resources = list(dict.fromkeys(resources))  # remove duplicates
         resources.sort()
         return resources
+
+    @property
+    def arns(self):
+        """Get a list of these resources"""
+        return self.resources
