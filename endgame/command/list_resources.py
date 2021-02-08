@@ -5,10 +5,12 @@ import logging
 import click
 import boto3
 from endgame import set_log_level
+from endgame.exposure_via_resource_policies import glacier_vault, sqs, lambda_layer, lambda_function, kms, \
+    cloudwatch_logs, efs, s3, \
+    sns, iam, ecr, secrets_manager, ses, elasticsearch, acm_pca
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared.validate import click_validate_supported_aws_service
-from endgame.exposure_via_resource_policies import glacier_vault, sqs, lambda_layer, lambda_function, kms, cloudwatch_logs, efs, s3, \
-    sns, iam, ecr, secrets_manager, ses, elasticsearch, acm_pca
+from endgame.shared.list_resources_response import ListResourcesResponse
 from endgame.shared import utils, constants
 
 logger = logging.getLogger(__name__)
@@ -62,17 +64,11 @@ def list_resources(service, profile, region, verbosity):
     sts_client = get_boto3_client(profile=profile, service="sts", region=region)
     current_account_id = get_current_account_id(sts_client=sts_client)
     if provided_service == "all":
-        for supported_service in constants.SUPPORTED_AWS_SERVICES:
-            if supported_service != "all":
-                translated_service = utils.get_service_translation(provided_service=supported_service)
-                client = get_boto3_client(profile=profile, service=translated_service, region=region)
-                result = list_resources_by_service(provided_service=supported_service, region=region, current_account_id=current_account_id, client=client)
-                if result:
-                    if result.resources:
-                        results.extend(result.resources)
+        results = get_all_resources_for_all_services(profile=profile, region=region, current_account_id=current_account_id)
     else:
         client = get_boto3_client(profile=profile, service=service, region=region)
-        result = list_resources_by_service(provided_service=service, region=region, current_account_id=current_account_id, client=client)
+        result = list_resources_by_service(provided_service=service, region=region,
+                                           current_account_id=current_account_id, client=client)
         results.extend(result.resources)
 
     # Print the results
@@ -81,7 +77,7 @@ def list_resources(service, profile, region, verbosity):
     else:
         # If you provide --service all, then we will list the ARNs to differentiate services
         if provided_service == "all":
-            logger.debug("'--service all' was selected; listing resources in ARN format to differentiate between services")
+            logger.debug("'--service all' selected; listing resources in ARN format to differentiate between services")
             for resource in results:
                 print(resource.arn)
         else:
@@ -89,6 +85,31 @@ def list_resources(service, profile, region, verbosity):
                 "Listing resources by name")
             for resource in results:
                 print(resource.name)
+
+
+def get_all_resources_for_all_services(profile: str, region: str, current_account_id: str):
+    results = []
+    for supported_service in constants.SUPPORTED_AWS_SERVICES:
+        if supported_service != "all":
+            translated_service = utils.get_service_translation(provided_service=supported_service)
+            result = get_all_resources(translated_service=translated_service, provided_service=supported_service,
+                                       profile=profile, region=region, current_account_id=current_account_id)
+            if result:
+                results.extend(result)
+    return results
+
+
+def get_all_resources(translated_service: str, profile: str, provided_service: str, region: str,
+                      current_account_id: str) -> list[ListResourcesResponse]:
+    """Get resource objects for every resource under an AWS service"""
+    results = []
+    client = get_boto3_client(profile=profile, service=translated_service, region=region)
+    result = list_resources_by_service(provided_service=provided_service, region=region,
+                                       current_account_id=current_account_id, client=client)
+    if result:
+        if result.resources:
+            results.extend(result.resources)
+    return results
 
 
 def list_resources_by_service(
@@ -100,13 +121,15 @@ def list_resources_by_service(
     resources = None
 
     if provided_service == "acm-pca":
-        resources = acm_pca.AcmPrivateCertificateAuthorities(client=client, current_account_id=current_account_id, region=region)
+        resources = acm_pca.AcmPrivateCertificateAuthorities(client=client, current_account_id=current_account_id,
+                                                             region=region)
     elif provided_service == "ecr":
         resources = ecr.EcrRepositories(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "efs":
         resources = efs.ElasticFileSystems(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "elasticsearch":
-        resources = elasticsearch.ElasticSearchDomains(client=client, current_account_id=current_account_id, region=region)
+        resources = elasticsearch.ElasticSearchDomains(client=client, current_account_id=current_account_id,
+                                                       region=region)
     elif provided_service == "glacier":
         resources = glacier_vault.GlacierVaults(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "iam":
@@ -118,7 +141,8 @@ def list_resources_by_service(
     elif provided_service == "lambda-layer":
         resources = lambda_layer.LambdaLayers(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "cloudwatch":
-        resources = cloudwatch_logs.CloudwatchResourcePolicies(client=client, current_account_id=current_account_id, region=region)
+        resources = cloudwatch_logs.CloudwatchResourcePolicies(client=client, current_account_id=current_account_id,
+                                                               region=region)
     elif provided_service == "s3":
         resources = s3.S3Buckets(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "ses":
@@ -128,6 +152,7 @@ def list_resources_by_service(
     elif provided_service == "sqs":
         resources = sqs.SqsQueues(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "secretsmanager":
-        resources = secrets_manager.SecretsManagerSecrets(client=client, current_account_id=current_account_id, region=region)
+        resources = secrets_manager.SecretsManagerSecrets(client=client, current_account_id=current_account_id,
+                                                          region=region)
 
     return resources
