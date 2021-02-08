@@ -79,8 +79,16 @@ def list_resources(service, profile, region, verbosity):
     if len(results) == 0:
         logger.warning("There are no resources given the criteria provided.")
     else:
-        for resource in results:
-            print(resource.arn)
+        # If you provide --service all, then we will list the ARNs to differentiate services
+        if provided_service == "all":
+            logger.debug("'--service all' was selected; listing resources in ARN format to differentiate between services")
+            for resource in results:
+                print(resource.arn)
+        else:
+            logger.debug(
+                "Listing resources by name")
+            for resource in results:
+                print(resource.name)
 
 
 def list_resources_by_service(
