@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +53,11 @@ class EcrRepository(ResourceType, ABC):
 class EcrRepositories(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "ecr"
+        self.resource_type = "repository"
 
     @property
-    def resources(self):
+    def resources(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 
@@ -65,9 +68,8 @@ class EcrRepositories(ResourceTypes):
             for resource in these_resources:
                 name = resource.get("repositoryName")
                 arn = resource.get("repositoryArn")
-                # Append the path to the list so we can rebuild the ARN later, but remove the leading /
-                resources.append(name)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=name)
+                resources.append(list_resources_response)
         return resources
-

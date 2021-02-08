@@ -4,11 +4,12 @@ import boto3
 import botocore
 from abc import ABC
 from botocore.exceptions import ClientError
-from policy_sentry.util.arns import get_account_from_arn
+from policy_sentry.util.arns import get_account_from_arn, get_resource_path_from_arn
 from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -141,9 +142,11 @@ class AcmPrivateCertificateAuthority(ResourceType, ABC):
 class AcmPrivateCertificateAuthorities(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "acm-pca"
+        self.resource_type = "certificate-authority"
 
     @property
-    def resources(self):
+    def resources(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 
@@ -155,8 +158,10 @@ class AcmPrivateCertificateAuthorities(ResourceTypes):
                 arn = resource.get("Arn")
                 status = resource.get("Status")
                 ca_type = resource.get("Type")
+                name = get_resource_path_from_arn(arn)
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=name)
                 if status == "ACTIVE":
-                    resources.append(arn)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
+                    resources.append(list_resources_response)
         return resources

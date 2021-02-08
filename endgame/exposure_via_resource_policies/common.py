@@ -4,6 +4,7 @@ import boto3
 import copy
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 
 class ResourceType(object):
@@ -105,9 +106,9 @@ class ResourceTypes(object):
         self.region = region
 
     def __str__(self):
-        return '%s' % (json.dumps(self.resources))
+        return '%s' % (json.dumps(self.resources.arn))
 
     @property
     @abstractmethod
-    def resources(self) -> list:
+    def resources(self) -> list[ListResourcesResponse]:
         raise NotImplementedError("Must override property 'resources'")

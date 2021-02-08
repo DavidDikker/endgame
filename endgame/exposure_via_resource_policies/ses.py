@@ -9,6 +9,7 @@ from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -100,9 +101,11 @@ class SesIdentityPolicy(ResourceType, ABC):
 class SesIdentityPolicies(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "ses"
+        self.resource_type = "identity"
 
     @property
-    def resources(self):
+    def resources(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 
@@ -111,8 +114,9 @@ class SesIdentityPolicies(ResourceTypes):
         for page in page_iterator:
             these_resources = page["Identities"]
             for resource in these_resources:
-                resources.append(resource)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
+                arn = f"arn:aws:ses:{self.region}:{self.current_account_id}:identity/{resource}"
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=resource)
+                resources.append(list_resources_response)
         return resources
-

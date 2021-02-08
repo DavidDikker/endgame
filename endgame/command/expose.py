@@ -146,36 +146,36 @@ def expose_service(
     service = provided_service
     resource = None
     # fmt: off
-    if service == "s3":
-        resource = s3.S3Bucket(name=name, client=client, current_account_id=current_account_id, region=region)
+    if service == "acm-pca":
+        resource = acm_pca.AcmPrivateCertificateAuthority(name=name, client=client, current_account_id=current_account_id, region=region)
+    elif service == "ecr":
+        resource = ecr.EcrRepository(name=name, client=client, current_account_id=current_account_id, region=region)
+    elif service == "efs":
+        resource = efs.ElasticFileSystem(name=name, client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "elasticsearch":
+        resource = elasticsearch.ElasticSearchDomain(name=name, client=client, current_account_id=current_account_id, region=region)
+    elif service == "glacier":
+        resource = glacier_vault.GlacierVault(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "iam":
         resource = iam.IAMRole(name=name, client=client, current_account_id=current_account_id, region=region)
+    elif service == "kms":
+        resource = kms.KmsKey(name=name, client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "lambda":
         resource = lambda_function.LambdaFunction(name=name, client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "lambda-layer":
         resource = lambda_layer.LambdaLayer(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "elasticsearch":
-        resource = elasticsearch.ElasticSearchDomain(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "efs":
-        resource = efs.ElasticFileSystem(name=name, client=client, current_account_id=current_account_id, region=region)
+    elif service == "logs":
+        resource = cloudwatch_logs.CloudwatchResourcePolicy(name=name, client=client, current_account_id=current_account_id, region=region)
+    elif service == "s3":
+        resource = s3.S3Bucket(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "secretsmanager":
         resource = secrets_manager.SecretsManagerSecret(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "ecr":
-        resource = ecr.EcrRepository(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "ses":
         resource = ses.SesIdentityPolicy(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "sns":
         resource = sns.SnsTopic(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "sqs":
         resource = sqs.SqsQueue(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "logs":
-        resource = cloudwatch_logs.CloudwatchResourcePolicy(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "kms":
-        resource = kms.KmsKey(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "glacier":
-        resource = glacier_vault.GlacierVault(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "acm-pca":
-        resource = acm_pca.AcmPrivateCertificateAuthority(name=name, client=client, current_account_id=current_account_id, region=region)
     # fmt: on
 
     if undo and not dry_run:

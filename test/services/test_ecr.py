@@ -20,12 +20,15 @@ class EcrTestCase(unittest.TestCase):
             # get_resource_policy has not been implemented by moto for ecr
             # self.example = EcrRepository(name=MY_RESOURCE, region="us-east-1", client=self.client,
             #                              current_account_id="111122223333")
-            self.resources = EcrRepositories(client=self.client, current_account_id="111122223333", region="us-east-1")
+            self.repositories = EcrRepositories(client=self.client, current_account_id="111122223333", region="us-east-1")
 
     def test_list_resources(self):
-        self.assertTrue("test-resource-exposure" in self.resources.resources)
-        for resource_name in self.resources.resources:
-            print(resource_name)
+        print()
+        resource_names = []
+        for resource in self.repositories.resources:
+            resource_names.append(resource.name)
+            print(resource.name)
+        self.assertTrue("test-resource-exposure" in resource_names)
 
     # get_resource_policy has not been implemented by moto for ecr
     # def test_get_rbp(self):

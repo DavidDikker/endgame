@@ -99,7 +99,6 @@ class CommonResourceTypeV2TestCase(unittest.TestCase):
     def test_add_myself(self):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=DeprecationWarning)
-            # TODO: Let's delete the bucket and add it again, just in case the previous test modified it?
             empty_policy = {'Version': '2012-10-17', 'Statement': []}
             after = self.example_s3.set_rbp(evil_policy=empty_policy)
             self.assertDictEqual(empty_policy, after)

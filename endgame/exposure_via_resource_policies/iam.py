@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +58,11 @@ class IAMRole(ResourceType, ABC):
 class IAMRoles(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "iam"
+        self.resource_type = "role"
 
     @property
-    def resources(self):
+    def resources(self) -> list[ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 
@@ -69,13 +72,13 @@ class IAMRoles(ResourceTypes):
             roles = page["Roles"]
             for role in roles:
                 path = role.get("Path")
+                arn = role.get("Arn")
                 name = role.get("RoleName")
                 # Special case: Ignore Service Linked Roles
                 if path == "/service-role/" or path.startswith("/aws-service-role/"):
                     continue
-                # Append the path to the list so we can rebuild the ARN later, but remove the leading /
-                resources.append(f"{path[1:]}{name}")
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=name)
+                resources.append(list_resources_response)
         return resources
-

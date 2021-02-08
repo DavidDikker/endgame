@@ -1,15 +1,16 @@
 import copy
 SUPPORTED_AWS_SERVICES = [
+  "all",
   "acm-pca",
   "ecr",
   "efs",
   "elasticsearch",
   "glacier",
+  "iam",
+  "kms",
   "lambda",
   "lambda-layer",
   "cloudwatch",
-  "iam",
-  "kms",
   "s3",
   "secretsmanager",
   "ses",

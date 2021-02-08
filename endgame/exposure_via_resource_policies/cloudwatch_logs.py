@@ -8,6 +8,7 @@ from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.list_resources_response import ListResourcesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +132,8 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
 class CloudwatchResourcePolicies(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
+        self.service = "cloudwatch"
+        self.resource_type = "resource-policy"
 
     @property
     def resources(self):
@@ -143,7 +146,11 @@ class CloudwatchResourcePolicies(ResourceTypes):
             these_resources = page["resourcePolicies"]
             for resource in these_resources:
                 name = resource.get("policyName")
-                resources.append(name)
-        resources = list(dict.fromkeys(resources))  # remove duplicates
-        resources.sort()
+                # This is not a real ARN.
+                # We made it up because AWS doesn't have ARNs for CloudWatch resource policies ¯\_(ツ)_/¯
+                arn = f"arn:aws:logs:{self.region}:{self.current_account_id}:resource-policy:{name}"
+                list_resources_response = ListResourcesResponse(
+                    service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
+                    resource_type=self.resource_type, name=name)
+                resources.append(list_resources_response)
         return resources
