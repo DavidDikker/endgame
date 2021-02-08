@@ -1,8 +1,9 @@
 import copy
+import logging
+import termcolor
 from policy_sentry.util.policy_files import get_sid_names_from_policy
 from policy_sentry.util.arns import get_account_from_arn
 from endgame.shared import constants
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -86,4 +87,24 @@ def change_policy_principal_from_arn_to_account_id(policy: dict) -> dict:
             updated_policy["Statement"].append(statement)
     return updated_policy
 
+
+def print_red(string):
+    termcolor.cprint(string, "red")
+
+
+def print_yellow(string):
+    termcolor.cprint(string, "yellow")
+
+
+def print_blue(string):
+    termcolor.cprint(string, "blue")
+
+
+def print_green(string):
+    termcolor.cprint(string, "green")
+
+
+def print_grey(string):
+    print(f"{GREY}{string}{END}")
+    # Color code from here: https://stackoverflow.com/a/39452138
 

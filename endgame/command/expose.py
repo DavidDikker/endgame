@@ -1,5 +1,5 @@
 """
-List exposable resources
+Expose AWS resources
 """
 import json
 import logging
@@ -121,15 +121,15 @@ def expose(name, evil_principal, profile, service, region, dry_run, undo, verbos
     print_diff_messages(response_message=response_message, verbosity=verbosity)
 
     if undo and not dry_run:
-        print_green(f"Removed the {principal_type} with ARN {evil_principal} from the resource based policy for the "
+        utils.print_green(f"Removed the {principal_type} with ARN {evil_principal} from the resource based policy for the "
                     f"{response_message.resource_type} named {response_message.resource_name}")
     elif dry_run and not undo:
-        print_red(f"Will add {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
+        utils.print_red(f"Will add {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
     elif dry_run and undo:
-        print_green(f"Will remove the {principal_type} with ARN {evil_principal} from the resource based policy for the"
+        utils.print_green(f"Will remove the {principal_type} with ARN {evil_principal} from the resource based policy for the"
                     f" {response_message.resource_type} named {response_message.resource_name}")
     else:
-        print_red(f"Added the {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
+        utils.print_red(f"Added the {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
 
 
 def expose_service(
@@ -179,16 +179,16 @@ def expose_service(
     # fmt: on
 
     if undo and not dry_run:
-        print_green("OPERATION: UNDO")
+        utils.print_green("OPERATION: UNDO")
         response_message = resource.undo(evil_principal=evil_principal)
     elif dry_run and not undo:
-        print_red(f"OPERATION: DRY_RUN_ADD_MYSELF")
+        utils.print_red(f"OPERATION: DRY_RUN_ADD_MYSELF")
         response_message = resource.add_myself(evil_principal=evil_principal, dry_run=dry_run)
     elif dry_run and undo:
-        print_green("OPERATION: DRY_RUN_UNDO")
+        utils.print_green("OPERATION: DRY_RUN_UNDO")
         response_message = resource.undo(evil_principal=evil_principal, dry_run=dry_run)
     else:
-        print_red(f"OPERATION: ADD_MYSELF")
+        utils.print_red(f"OPERATION: ADD_MYSELF")
         response_message = resource.add_myself(evil_principal=evil_principal, dry_run=False)
 
     return response_message
@@ -196,47 +196,26 @@ def expose_service(
 
 def print_diff_messages(response_message: ResponseMessage, verbosity: int):
     if verbosity >= 2:
-        print_grey(f"Old statement IDs: {response_message.original_policy_sids}")
-        print_grey(f"Updated statement IDs: {response_message.updated_policy_sids}")
+        utils.print_grey(f"Old statement IDs: {response_message.original_policy_sids}")
+        utils.print_grey(f"Updated statement IDs: {response_message.updated_policy_sids}")
 
     if response_message.added_sids:
         logger.debug("Statements are being added")
         diff = response_message.added_sids
-        print_yellow(f"+ Resource: {response_message.victim_resource_arn}")
-        print_green(f"++ (New statements): {', '.join(diff)}")
-        print_green(f"++ (Evil Principal): {response_message.evil_principal}")
+        utils.print_yellow(f"+ Resource: {response_message.victim_resource_arn}")
+        utils.print_green(f"++ (New statements): {', '.join(diff)}")
+        utils.print_green(f"++ (Evil Principal): {response_message.evil_principal}")
     elif len(response_message.updated_policy_sids) == len(response_message.original_policy_sids):
-        print_yellow(f"* Resource: {response_message.victim_resource_arn}")
-        print_yellow(f"** (No new statements)")
+        utils.print_yellow(f"* Resource: {response_message.victim_resource_arn}")
+        utils.print_yellow(f"** (No new statements)")
     else:
-        print_grey("Statements are being removed")
+        utils.print_grey("Statements are being removed")
         diff = response_message.removed_sids
-        print_yellow(f"- Resource: {response_message.victim_resource_arn}")
-        print_red(f"-- Statements being removed: {', '.join(diff)}")
+        utils.print_yellow(f"- Resource: {response_message.victim_resource_arn}")
+        utils.print_red(f"-- Statements being removed: {', '.join(diff)}")
 
     if verbosity >= 3:
-        print_grey("Original policy:")
-        print_grey(json.dumps(response_message.original_policy))
-        print_grey("New policy:")
-        print_grey(json.dumps(response_message.updated_policy))
-
-
-def print_red(string):
-    termcolor.cprint(string, "red")
-
-
-def print_yellow(string):
-    termcolor.cprint(string, "yellow")
-
-
-def print_blue(string):
-    termcolor.cprint(string, "blue")
-
-
-def print_green(string):
-    termcolor.cprint(string, "green")
-
-
-def print_grey(string):
-    print(f"{GREY}{string}{END}")
-    # Color code from here: https://stackoverflow.com/a/39452138
+        utils.print_grey("Original policy:")
+        utils.print_grey(json.dumps(response_message.original_policy))
+        utils.print_grey("New policy:")
+        utils.print_grey(json.dumps(response_message.updated_policy))

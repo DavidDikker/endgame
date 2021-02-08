@@ -14,6 +14,7 @@ def endgame():
 
 endgame.add_command(command.list_resources.list_resources)
 endgame.add_command(command.expose.expose)
+endgame.add_command(command.smash.smash)
 
 
 def main():
