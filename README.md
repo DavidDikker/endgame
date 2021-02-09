@@ -2,6 +2,28 @@
 
 Share an AWS account's resources with a rogue AWS Account - or to the entire internet 😈
 
+**TLDR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire internet.
+
+## Supported Backdoors
+
+| Backdoored Resource Type      | Support | Access Analyzer Support |
+|-------------------------------|---------|-------------------------|
+| ACM PCA                       | ✅     | ❌                       |
+| CloudWatch Resource Policies  | ✅     | ❌                       |
+| ECR Repositories              | ✅     | ❌                       |
+| EFS File Systems              | ✅     | ❌                       |
+| ElasticSearch Domains         | ✅     | ❌                       |
+| Glacier Vault Access Policies | ✅     | ❌                       |
+| IAM Roles                     | ✅     | ✅                       |
+| KMS Keys                      | ✅     | ✅                       |
+| Lambda Functions              | ✅     | ✅                       |
+| Lambda Layers                 | ✅     | ✅                       |
+| S3 Buckets                    | ✅     | ✅                       |
+| Secrets Manager Secrets       | ✅     | ✅                       |
+| SES Identity Policies         | ✅     | ❌                       |
+| SQS Queues                    | ✅     | ✅                       |
+| SNS Topics                    | ✅     | ❌                       |
+
 ## Installation
 
 * Install
@@ -104,6 +126,16 @@ Example output:
 It will output the following:
 
 > ![Expose undo](docs/images/add-myself-undo.png)
+
+
+#### Expose everything
+
+
+```bash
+endgame smash --service all --dry-run
+endgame smash --service all
+endgame smash --service all --undo
+```
 
 ## Current Resource Support Statuses
 
