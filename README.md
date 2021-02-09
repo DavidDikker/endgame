@@ -109,23 +109,23 @@ It will output the following:
 
 ### Backdoors via Resource-based Policies
 
-| Backdoored Resource Type      | Support Status |
-|-------------------------------|----------------|
-| ACM PCA                       | ✅             |
-| CloudWatch Resource Policies  | ✅             |
-| ECR Repositories              | ✅             |
-| EFS File Systems              | ✅             |
-| ElasticSearch Domains         | ✅             |
-| Glacier Vault Access Policies | ✅             |
-| IAM Roles                     | ✅             |
-| KMS Keys                      | ✅             |
-| Lambda Functions              | ✅             |
-| Lambda Layers                 | ✅             |
-| S3 Buckets                    | ✅             |
-| Secrets Manager Secrets       | ✅             |
-| SES Identity Policies         | ✅             |
-| SQS Queues                    | ✅             |
-| SNS Topics                    | ✅             |
+| Backdoored Resource Type      | Support | Access Analyzer Support |
+|-------------------------------|---------|-------------------------|
+| ACM PCA                       | ✅     | ❌                       |
+| CloudWatch Resource Policies  | ✅     | ❌                       |
+| ECR Repositories              | ✅     | ❌                       |
+| EFS File Systems              | ✅     | ❌                       |
+| ElasticSearch Domains         | ✅     | ❌                       |
+| Glacier Vault Access Policies | ✅     | ❌                       |
+| IAM Roles                     | ✅     | ✅                       |
+| KMS Keys                      | ✅     | ✅                       |
+| Lambda Functions              | ✅     | ✅                       |
+| Lambda Layers                 | ✅     | ✅                       |
+| S3 Buckets                    | ✅     | ✅                       |
+| Secrets Manager Secrets       | ✅     | ✅                       |
+| SES Identity Policies         | ✅     | ❌                       |
+| SQS Queues                    | ✅     | ✅                       |
+| SNS Topics                    | ✅     | ❌                       |
 
 ### Backdoors via Sharing APIs
 
