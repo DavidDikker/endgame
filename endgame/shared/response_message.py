@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class ResponseMessage:
     def __init__(self, message: str, operation: str, victim_resource_arn: str, evil_principal: str,
-                 original_policy: dict, updated_policy: dict, resource_type: str, resource_name: str):
+                 original_policy: dict, updated_policy: dict, resource_type: str, resource_name: str, service: str):
         self.message = message
         self.operation = operation
         # Operation:  ADD_MYSELF, DRY_RUN_ADD_MYSELF, UNDO, DRY_RUN_UNDO, LIST
@@ -23,6 +23,7 @@ class ResponseMessage:
         self.updated_policy = validate_basic_policy_json(updated_policy)
         self.resource_type = resource_type
         self.resource_name = resource_name
+        self.service = service
 
     @property
     def updated_policy_sids(self) -> list:
@@ -55,24 +56,3 @@ class ResponseMessage:
         if len(self.original_policy_sids) > len(self.updated_policy_sids):
             diff = list(set(self.original_policy_sids) - set(self.updated_policy_sids))
         return diff
-
-    # def translate_response_code(self) -> dict:
-    #     """Experimenting with using HTTP response codes to conceptualize the statuses/results of each function."""
-    #     response = dict(
-    #         message=None,
-    #         message_code=self.message_code,
-    #         details=None
-    #     )
-    #     if self.message_code == 200:
-    #         response["message"] = "OK"
-    #         response["details"] = "All good bruh"
-    #     elif self.message_code == 201:
-    #         response["message"] = "Created"
-    #         response["details"] = "Mischief: The new policy was created"
-    #     elif self.message_code == 202:
-    #         response["message"] = "Accepted"
-    #         response["details"] = "Dry run: The policy was acceptable"
-    #     elif self.message_code == 404:
-    #         response["message"] = "Not Found"
-    #         response["details"] = "Some resource was not found"
-    #     return response

@@ -8,6 +8,7 @@ from endgame.shared import constants
 from endgame.exposure_via_resource_policies.common import ResourceType, ResourceTypes
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.list_resources_response import ListResourcesResponse
+from endgame.shared.response_message import ResponseMessage
 
 logger = logging.getLogger(__name__)
 
@@ -45,11 +46,19 @@ class GlacierVault(ResourceType, ABC):
         )
         return policy_document
 
-    def set_rbp(self, evil_policy: dict) -> dict:
+    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
         new_policy = json.dumps(evil_policy)
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glacier.html#Glacier.Client.set_vault_access_policy
-        self.client.set_vault_access_policy(vaultName=self.name, policy={"Policy": new_policy})
-        return evil_policy
+        try:
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glacier.html#Glacier.Client.set_vault_access_policy
+            self.client.set_vault_access_policy(vaultName=self.name, policy={"Policy": new_policy})
+            message = "success"
+        except botocore.exceptions.ClientError as error:
+            message = str(error)
+        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=evil_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
+        return response_message
 
 
 class GlacierVaults(ResourceTypes):

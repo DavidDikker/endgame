@@ -31,7 +31,7 @@ class IAMTestCase(unittest.TestCase):
 
     def test_set_rbp(self):
         after = self.example.set_rbp(constants.EC2_ASSUME_ROLE_POLICY)
-        self.assertDictEqual(constants.EC2_ASSUME_ROLE_POLICY, after)
+        self.assertDictEqual(constants.EC2_ASSUME_ROLE_POLICY, after.updated_policy)
 
     def test_add_myself(self):
         result = self.example.add_myself(evil_principal=EVIL_PRINCIPAL)

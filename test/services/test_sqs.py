@@ -70,10 +70,10 @@ class SqsTestCase(unittest.TestCase):
                 }
             ]
         }
-        results = self.example.set_rbp(evil_policy=expected_results)
+        response = self.example.set_rbp(evil_policy=expected_results)
         # print(json.dumps(results, indent=4))
         self.maxDiff = None
-        self.assertDictEqual(results, expected_results)
+        self.assertDictEqual(response.updated_policy, expected_results)
 
     def test_add_myself(self):
         result = self.example.add_myself(evil_principal=EVIL_PRINCIPAL)

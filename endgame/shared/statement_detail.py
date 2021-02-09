@@ -95,7 +95,11 @@ class StatementDetail:
     def _aws_principals(self):
         """Holds the principal ARNs in a statement"""
         principals_block = self.statement.get("Principal")
-        principals = principals_block.get("AWS")
+        principals = []
+        if isinstance(principals_block, str):
+            principals = principals_block
+        elif isinstance(principals_block, dict):
+            principals = principals_block.get("AWS", None)
         if not principals:
             return []
         # If it's a string, turn it into a list
@@ -120,19 +124,10 @@ class StatementDetail:
     def _other_principals(self) -> dict:
         principals_block = self.statement.get("Principal")
         other_principals = {}
-        for principal_type in principals_block:
-            if principal_type != "AWS":
-                other_principals[principal_type] = principals_block[principal_type]
+        if isinstance(principals_block, str):
+            other_principals["*"] = principals_block
+        else:
+            for principal_type in principals_block:
+                if principal_type != "AWS":
+                    other_principals[principal_type] = principals_block[principal_type]
         return other_principals
-
-    # def json_with_evil_principal(
-    #         self,
-    #         principal: str,  # This can be an account ID, root, or an evil user.
-    #         victim_account_id,
-    #         evil_account_id
-    # ) -> dict:
-    #     if self.override_account_id_instead_of_principal:
-    #         principal = evil_account_id
-    #
-    #
-    #     return {}

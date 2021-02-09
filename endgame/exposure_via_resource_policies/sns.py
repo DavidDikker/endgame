@@ -82,6 +82,7 @@ class SnsTopic(ResourceType, ABC):
         for statement in self.policy_document.statements:
             if statement.sid == constants.SID_SIGNATURE:
                 if not dry_run:
+                    # TODO: Error handling for setting policy
                     response = self.client.remove_permission(
                         TopicArn=self.arn,
                         Label=statement.sid,
@@ -90,10 +91,11 @@ class SnsTopic(ResourceType, ABC):
                 new_policy["Statement"].append(json.loads(statement.__str__()))
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=new_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
-    def set_rbp(self, evil_policy: dict) -> dict:
+    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
         new_policy_document = PolicyDocument(
             policy=evil_policy,
             service=self.service,
@@ -107,18 +109,25 @@ class SnsTopic(ResourceType, ABC):
             "Statement": []
         }
         current_sids = get_sid_names_with_error_handling(self.original_policy)
-        for statement in new_policy_document.statements:
-            if statement.sid not in current_sids:
-                response = self.client.add_permission(
-                    TopicArn=self.arn,
-                    Label=statement.sid,
-                    ActionName=self.sns_actions_without_prefixes(statement.actions),
-                    AWSAccountId=statement.aws_principals,
-                )
-            new_policy_json["Statement"].append(json.loads(statement.__str__()))
+        try:
+            for statement in new_policy_document.statements:
+                if statement.sid not in current_sids:
+                    self.client.add_permission(
+                        TopicArn=self.arn,
+                        Label=statement.sid,
+                        ActionName=self.sns_actions_without_prefixes(statement.actions),
+                        AWSAccountId=statement.aws_principals,
+                    )
+                new_policy_json["Statement"].append(json.loads(statement.__str__()))
+            message = "success"
+        except botocore.exceptions.ClientError as error:
+            message = str(error)
         policy_document = self._get_rbp()
-        # return new_policy_json
-        return policy_document.json
+        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=policy_document.json, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
+        return response_message
 
     def sns_actions_without_prefixes(self, actions_with_service_prefix):
         # SNS boto3 client requires that you provide Publish instead of sns:Publish

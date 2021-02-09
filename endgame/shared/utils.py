@@ -5,6 +5,8 @@ from policy_sentry.util.policy_files import get_sid_names_from_policy
 from policy_sentry.util.arns import get_account_from_arn
 from endgame.shared import constants
 logger = logging.getLogger(__name__)
+END = "\033[0m"
+GREY = "\33[90m"
 
 
 def get_sid_names_with_error_handling(policy):
@@ -31,6 +33,8 @@ def get_service_translation(provided_service: str) -> str:
         actual_service = "lambda"
     elif provided_service == "elasticsearch":
         actual_service = "es"
+    elif provided_service == "elasticfilesystem":
+        actual_service = "efs"
     else:
         actual_service = provided_service
     return actual_service

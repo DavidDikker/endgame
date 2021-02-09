@@ -121,14 +121,18 @@ def expose(name, evil_principal, profile, service, region, dry_run, undo, verbos
     print_diff_messages(response_message=response_message, verbosity=verbosity)
 
     if undo and not dry_run:
+        utils.print_green("OPERATION: UNDO")
         utils.print_green(f"Removed the {principal_type} with ARN {evil_principal} from the resource based policy for the "
                     f"{response_message.resource_type} named {response_message.resource_name}")
     elif dry_run and not undo:
+        utils.print_red(f"OPERATION: DRY_RUN_ADD_MYSELF")
         utils.print_red(f"Will add {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
     elif dry_run and undo:
+        utils.print_green("OPERATION: DRY_RUN_UNDO")
         utils.print_green(f"Will remove the {principal_type} with ARN {evil_principal} from the resource based policy for the"
                     f" {response_message.resource_type} named {response_message.resource_name}")
     else:
+        utils.print_red(f"OPERATION: ADD_MYSELF")
         utils.print_red(f"Added the {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
 
 
@@ -150,9 +154,9 @@ def expose_service(
         resource = acm_pca.AcmPrivateCertificateAuthority(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "ecr":
         resource = ecr.EcrRepository(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "efs":
+    elif service == "efs" or service == "elasticfilesystem":
         resource = efs.ElasticFileSystem(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "elasticsearch":
+    elif service == "elasticsearch" or service == "es":
         resource = elasticsearch.ElasticSearchDomain(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "glacier":
         resource = glacier_vault.GlacierVault(name=name, client=client, current_account_id=current_account_id, region=region)
@@ -160,11 +164,11 @@ def expose_service(
         resource = iam.IAMRole(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "kms":
         resource = kms.KmsKey(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "lambda":
+    elif service == "lambda":
         resource = lambda_function.LambdaFunction(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "lambda-layer":
+    elif service == "lambda-layer":
         resource = lambda_layer.LambdaLayer(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "logs":
+    elif service == "logs" or service == "cloudwatch":
         resource = cloudwatch_logs.CloudwatchResourcePolicy(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "s3":
         resource = s3.S3Bucket(name=name, client=client, current_account_id=current_account_id, region=region)
@@ -179,16 +183,12 @@ def expose_service(
     # fmt: on
 
     if undo and not dry_run:
-        utils.print_green("OPERATION: UNDO")
         response_message = resource.undo(evil_principal=evil_principal)
     elif dry_run and not undo:
-        utils.print_red(f"OPERATION: DRY_RUN_ADD_MYSELF")
         response_message = resource.add_myself(evil_principal=evil_principal, dry_run=dry_run)
     elif dry_run and undo:
-        utils.print_green("OPERATION: DRY_RUN_UNDO")
         response_message = resource.undo(evil_principal=evil_principal, dry_run=dry_run)
     else:
-        utils.print_red(f"OPERATION: ADD_MYSELF")
         response_message = resource.add_myself(evil_principal=evil_principal, dry_run=False)
 
     return response_message
