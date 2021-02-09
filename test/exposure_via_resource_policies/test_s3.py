@@ -28,7 +28,6 @@ class S3TestCase(unittest.TestCase):
         self.assertTrue(self.buckets.resources[0].arn == "arn:aws:s3:::mybucket")
         self.assertTrue(self.buckets.resources[0].name == "mybucket")
 
-
     def test_get_rbp(self):
         expected_result = {'Version': '2012-10-17', 'Statement': []}
         self.assertDictEqual(self.example.original_policy, expected_result)
