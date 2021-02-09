@@ -3,11 +3,11 @@ SHELL:=/bin/bash
 .PHONY: setup-env
 setup-env:
 	python3 -m venv ./venv && source venv/bin/activate
-	python -m pip install -r requirements.txt
+	python3 -m pip install -r requirements.txt
 
 .PHONY: setup-dev
 setup-dev: setup-env
-	python -m pip install -r requirements-dev.txt
+	python3 -m pip install -r requirements-dev.txt
 
 .PHONY: build-docs
 build-docs: setup-dev
@@ -19,20 +19,20 @@ serve-docs: setup-dev
 
 .PHONY: build
 build: setup-env clean
-	python -m pip install --upgrade setuptools wheel
-	python -m setup -q sdist bdist_wheel
+	python3 -m pip install --upgrade setuptools wheel
+	python3 -m setup -q sdist bdist_wheel
 
 .PHONY: install
 install: build
-	python -m pip install -q ./dist/endgame*.tar.gz
+	python3 -m pip install -q ./dist/endgame*.tar.gz
 	endgame --help
 
 .PHONY: uninstall
 uninstall:
-	python -m pip uninstall endgame -y
-	python -m pip uninstall -r requirements.txt -y
-	python -m pip uninstall -r requirements-dev.txt -y
-	python -m pip freeze | xargs python -m pip uninstall -y
+	python3 -m pip uninstall endgame -y
+	python3 -m pip uninstall -r requirements.txt -y
+	python3 -m pip uninstall -r requirements-dev.txt -y
+	python3 -m pip freeze | xargs python3 -m pip uninstall -y
 
 .PHONY: clean
 clean:
@@ -47,7 +47,7 @@ clean:
 
 .PHONY: test
 test: setup-dev
-	python -m coverage run -m pytest -v
+	python3 -m coverage run -m pytest -v
 
 .PHONY: security-test
 security-test: setup-dev
@@ -63,9 +63,9 @@ lint: setup-dev
 
 .PHONY: publish
 publish: build
-	python -m pip install --upgrade twine
-	python -m twine upload dist/*
-	python -m pip install endgame
+	python3 -m pip install --upgrade twine
+	python3 -m twine upload dist/*
+	python3 -m pip install endgame
 
 .PHONY: count-loc
 count-loc:
@@ -83,9 +83,9 @@ terraform-destroy:
 
 .PHONY: integration-test
 integration-test: setup-dev
-	python -m invoke test.list-resources
-	python -m invoke test.expose-dry-run
-	python -m invoke test.expose
-	python -m invoke test.expose-undo
+	python3 -m invoke test.list-resources
+	python3 -m invoke test.expose-dry-run
+	python3 -m invoke test.expose
+	python3 -m invoke test.expose-undo
 	make terraform-destroy
 
