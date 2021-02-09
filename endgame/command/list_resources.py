@@ -43,12 +43,19 @@ logger = logging.getLogger(__name__)
     envvar="AWS_REGION"
 )
 @click.option(
+    "--cloak",
+    "-c",
+    is_flag=True,
+    default=False,
+    help="Evade detection by using the default AWS SDK user agent instead of one that indicates usage of this tool.",
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",
     count=True,
 )
-def list_resources(service, profile, region, verbosity):
+def list_resources(service, profile, region, cloak, verbosity):
     """
     List AWS resources to expose.
     """
@@ -61,12 +68,12 @@ def list_resources(service, profile, region, verbosity):
 
     results = []
     # Get the boto3 clients
-    sts_client = get_boto3_client(profile=profile, service="sts", region=region)
+    sts_client = get_boto3_client(profile=profile, service="sts", region=region, cloak=cloak)
     current_account_id = get_current_account_id(sts_client=sts_client)
     if provided_service == "all":
-        results = get_all_resources_for_all_services(profile=profile, region=region, current_account_id=current_account_id)
+        results = get_all_resources_for_all_services(profile=profile, region=region, current_account_id=current_account_id, cloak=cloak)
     else:
-        client = get_boto3_client(profile=profile, service=service, region=region)
+        client = get_boto3_client(profile=profile, service=service, region=region, cloak=cloak)
         result = list_resources_by_service(provided_service=service, region=region,
                                            current_account_id=current_account_id, client=client)
         results.extend(result.resources)
@@ -87,23 +94,23 @@ def list_resources(service, profile, region, verbosity):
                 print(resource.name)
 
 
-def get_all_resources_for_all_services(profile: str, region: str, current_account_id: str):
+def get_all_resources_for_all_services(profile: str, region: str, current_account_id: str, cloak: bool = False):
     results = []
     for supported_service in constants.SUPPORTED_AWS_SERVICES:
         if supported_service != "all":
             translated_service = utils.get_service_translation(provided_service=supported_service)
             result = get_all_resources(translated_service=translated_service, provided_service=supported_service,
-                                       profile=profile, region=region, current_account_id=current_account_id)
+                                       profile=profile, region=region, current_account_id=current_account_id, cloak=cloak)
             if result:
                 results.extend(result)
     return results
 
 
 def get_all_resources(translated_service: str, profile: str, provided_service: str, region: str,
-                      current_account_id: str) -> list[ListResourcesResponse]:
+                      current_account_id: str, cloak: bool = False) -> list[ListResourcesResponse]:
     """Get resource objects for every resource under an AWS service"""
     results = []
-    client = get_boto3_client(profile=profile, service=translated_service, region=region)
+    client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
     result = list_resources_by_service(provided_service=provided_service, region=region,
                                        current_account_id=current_account_id, client=client)
     if result:
