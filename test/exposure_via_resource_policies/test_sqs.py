@@ -2,7 +2,7 @@ import unittest
 import warnings
 import json
 from moto import mock_sqs
-from endgame.exposure_via_resource_policies.sqs import SqsQueue
+from endgame.exposure_via_resource_policies.sqs import SqsQueue, SqsQueues
 from endgame.shared.aws_login import get_boto3_client
 from endgame.shared import constants
 
@@ -17,10 +17,19 @@ class SqsTestCase(unittest.TestCase):
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             self.mock = mock_sqs()
             self.mock.start()
-            self.client = get_boto3_client(profile=None, service="sqs", region="us-east-1")
+            current_account_id = "123456789012"
+            region = "us-east-1"
+            self.client = get_boto3_client(profile=None, service="sqs", region=region)
             self.queue_url = self.client.create_queue(QueueName=MY_RESOURCE)["QueueUrl"]
-            self.example = SqsQueue(name=MY_RESOURCE, region="us-east-1", client=self.client,
-                                    current_account_id="123456789012")
+            self.example = SqsQueue(name=MY_RESOURCE, region=region, client=self.client,
+                                    current_account_id=current_account_id)
+            self.queues = SqsQueues(client=self.client, current_account_id=current_account_id, region=region)
+
+    def test_list_queues(self):
+        print(self.queues.resources[0].name)
+        print(self.queues.resources[0].arn)
+        self.assertTrue(self.queues.resources[0].name == "test-resource-exposure")
+        self.assertTrue(self.queues.resources[0].arn.startswith("arn:aws:sqs:us-east-1:123456789012:test-resource-exposure"))
 
     def test_get_rbp(self):
         # response = self.client.get_queue_attributes(QueueUrl=self.queue_url)

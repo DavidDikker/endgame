@@ -2,7 +2,7 @@ import unittest
 import warnings
 import json
 from moto import mock_secretsmanager
-from endgame.exposure_via_resource_policies.secrets_manager import SecretsManagerSecret
+from endgame.exposure_via_resource_policies.secrets_manager import SecretsManagerSecret, SecretsManagerSecrets
 from endgame.shared.aws_login import get_boto3_client
 
 MY_RESOURCE = "test-resource-exposure"
@@ -16,12 +16,21 @@ class SecretsManagerTestCase(unittest.TestCase):
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             self.mock = mock_secretsmanager()
             self.mock.start()
-            self.client = get_boto3_client(profile=None, service="secretsmanager", region="us-east-1")
+            current_account_id = "111122223333"
+            region = "us-east-1"
+            self.client = get_boto3_client(profile=None, service="secretsmanager", region=region)
             response = self.client.create_secret(
                 Name=MY_RESOURCE, SecretString="foosecret"
             )
-            self.example = SecretsManagerSecret(name=MY_RESOURCE, region="us-east-1", client=self.client,
-                                                current_account_id="111122223333")
+            self.example = SecretsManagerSecret(name=MY_RESOURCE, region=region, client=self.client,
+                                                current_account_id=current_account_id)
+            self.secrets = SecretsManagerSecrets(client=self.client, current_account_id=current_account_id, region=region)
+
+    def test_list_secrets(self):
+        print(self.secrets.resources[0].name)
+        print(self.secrets.resources[0].arn)
+        self.assertTrue(self.secrets.resources[0].name == "test-resource-exposure")
+        self.assertTrue(self.secrets.resources[0].arn.startswith("arn:aws:secretsmanager:us-east-1:1234567890:secret:test-resource-exposure"))
 
     def test_get_rbp(self):
         expected_result = {
