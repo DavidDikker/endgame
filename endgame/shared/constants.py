@@ -50,6 +50,8 @@ LAMBDA_ASSUME_ROLE_POLICY = {
 # Any IAM Policy with a statement added from this tool will include the value of this variable.
 SID_SIGNATURE = "Endgame"
 ALLOW_CURRENT_ACCOUNT_SID_SIGNATURE = "AllowCurrentAccount"
+# This can be used by blue team to identify API calls in CloudTrail executed by this tool.
+USER_AGENT_INDICATOR = "jeffrey_epstein_didnt_kill_himself"
 
 
 def get_empty_policy():

@@ -1,16 +1,25 @@
+import os
 import logging
 import boto3
 from botocore.config import Config
+from endgame.shared import constants
 
 
-def get_boto3_client(profile, service: str, region="us-east-1") -> boto3.Session.client:
+def get_boto3_client(profile, service: str, region="us-east-1", cloak: bool = False) -> boto3.Session.client:
     logging.getLogger('botocore').setLevel(logging.CRITICAL)
     session_data = {"region_name": region}
     if profile:
         session_data["profile_name"] = profile
     session = boto3.Session(**session_data)
-    config = Config(connect_timeout=5, retries={"max_attempts": 10})
-    client = session.client(service, config=config)
+
+    if cloak:
+        config = Config(connect_timeout=5, retries={"max_attempts": 10})
+    else:
+        config = Config(connect_timeout=5, retries={"max_attempts": 10}, user_agent=constants.USER_AGENT_INDICATOR)
+    if os.environ.get('LOCALSTACK_ENDPOINT_URL'):
+        client = session.client(service, config=config, endpoint_url=os.environ.get('LOCALSTACK_ENDPOINT_URL'))
+    else:
+        client = session.client(service, config=config, endpoint_url=os.environ.get('LOCALSTACK_ENDPOINT_URL'))
     return client
 
 
