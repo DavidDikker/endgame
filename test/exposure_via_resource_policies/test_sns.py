@@ -2,7 +2,7 @@ import unittest
 import warnings
 import json
 from moto import mock_sns
-from endgame.exposure_via_resource_policies.sns import SnsTopic
+from endgame.exposure_via_resource_policies.sns import SnsTopic, SnsTopics
 from endgame.shared.aws_login import get_boto3_client
 from endgame.shared import constants
 
@@ -17,10 +17,20 @@ class SnsTestCase(unittest.TestCase):
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             self.mock = mock_sns()
             self.mock.start()
-            self.client = get_boto3_client(profile=None, service="sns", region="us-east-1")
+            current_account_id = "123456789012"
+            region = "us-east-1"
+            self.client = get_boto3_client(profile=None, service="sns", region=region)
             response = self.client.create_topic(Name=MY_RESOURCE)
-            self.example = SnsTopic(name=MY_RESOURCE, region="us-east-1", client=self.client,
-                                    current_account_id="123456789012")
+            self.example = SnsTopic(name=MY_RESOURCE, region=region, client=self.client,
+                                    current_account_id=current_account_id)
+            self.topics = SnsTopics(client=self.client, current_account_id=current_account_id, region=region)
+
+    def test_list_topics(self):
+        print(self.topics.resources[0].name)
+        print(self.topics.resources[0].arn)
+        self.assertTrue(self.topics.resources[0].name == "test-resource-exposure")
+        self.assertTrue(self.topics.resources[0].arn == "arn:aws:sns:us-east-1:123456789012:test-resource-exposure")
+
 
     def test_get_rbp(self):
         # This is the default policy

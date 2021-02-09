@@ -2,7 +2,7 @@ import unittest
 import warnings
 import json
 from moto import mock_kms
-from endgame.exposure_via_resource_policies.kms import KmsKey
+from endgame.exposure_via_resource_policies.kms import KmsKey, KmsKeys
 from endgame.shared.aws_login import get_boto3_client
 from endgame.shared import constants
 
@@ -17,11 +17,20 @@ class KmsTestCase(unittest.TestCase):
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             self.mock = mock_kms()
             self.mock.start()
-            self.client = get_boto3_client(profile=None, service="kms", region="us-east-1")
-            key_id = self.client.create_key()["KeyMetadata"]["KeyId"]
-            self.client.create_alias(AliasName=MY_RESOURCE, TargetKeyId=key_id)
-            self.example = KmsKey(name=MY_RESOURCE, region="us-east-1", client=self.client,
-                                  current_account_id="123456789012")
+            region = "us-east-1"
+            current_account_id = "123456789012"
+            self.client = get_boto3_client(profile=None, service="kms", region=region)
+            self.key_id = self.client.create_key()["KeyMetadata"]["KeyId"]
+            self.client.create_alias(AliasName=MY_RESOURCE, TargetKeyId=self.key_id)
+            self.example = KmsKey(name=MY_RESOURCE, region=region, client=self.client,
+                                  current_account_id=current_account_id)
+            self.keys = KmsKeys(client=self.client, current_account_id=current_account_id, region=region)
+
+    def test_list_keys(self):
+        print(self.keys.resources[0].name)
+        print(self.keys.resources[0].arn)
+        self.assertTrue(self.keys.resources[0].name == self.key_id)
+        self.assertTrue(self.keys.resources[0].arn == f"arn:aws:kms:us-east-1:123456789012:key/{self.key_id}")
 
     def test_get_rbp(self):
         expected_result = {

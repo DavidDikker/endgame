@@ -15,11 +15,19 @@ class S3TestCase(unittest.TestCase):
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             self.mock = mock_s3()
             self.mock.start()
-            self.client = get_boto3_client(profile=None, service="s3", region="us-east-1")
-
+            region = "us-east-1"
+            current_account_id = "123456789012"
+            self.client = get_boto3_client(profile=None, service="s3", region=region)
             self.client.create_bucket(Bucket=MY_RESOURCE)
-            self.example = s3.S3Bucket(name=MY_RESOURCE, region="us-east-1", client=self.client,
-                                       current_account_id="111122223333")
+            self.example = s3.S3Bucket(name=MY_RESOURCE, region=region, client=self.client,
+                                       current_account_id=current_account_id)
+            self.buckets = s3.S3Buckets(client=self.client, current_account_id=current_account_id, region=region)
+
+    def test_list_roles(self):
+        print(self.buckets.resources[0].name)
+        self.assertTrue(self.buckets.resources[0].arn == "arn:aws:s3:::mybucket")
+        self.assertTrue(self.buckets.resources[0].name == "mybucket")
+
 
     def test_get_rbp(self):
         expected_result = {'Version': '2012-10-17', 'Statement': []}

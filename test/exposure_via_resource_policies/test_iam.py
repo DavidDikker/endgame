@@ -26,14 +26,8 @@ class IAMTestCase(unittest.TestCase):
             self.roles = IAMRoles(client=self.client, current_account_id=current_account_id, region=region)
 
     def test_list_roles(self):
-        results = []
-        results.extend(self.roles.resources)
-        expected_results = ["arn:aws:iam::123456789012:role/test-resource-exposure"]
-        self.assertTrue(len(results) == 1)
-        arns = []
-        for resource in results:
-            arns.append(resource.arn)
-        self.assertListEqual(arns, expected_results)
+        self.assertTrue(self.roles.resources[0].name == "test-resource-exposure")
+        self.assertTrue(self.roles.resources[0].arn == "arn:aws:iam::123456789012:role/test-resource-exposure")
 
     def test_get_rbp(self):
         expected_result = constants.EC2_ASSUME_ROLE_POLICY
