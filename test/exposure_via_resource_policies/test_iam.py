@@ -2,7 +2,7 @@ import unittest
 import warnings
 import json
 from moto import mock_iam
-from endgame.exposure_via_resource_policies.iam import IAMRole
+from endgame.exposure_via_resource_policies.iam import IAMRole, IAMRoles
 from endgame.shared.aws_login import get_boto3_client
 from endgame.shared import constants
 
@@ -14,13 +14,26 @@ class IAMTestCase(unittest.TestCase):
     def setUp(self):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=DeprecationWarning)
+            current_account_id = "111122223333"
+            region = "us-east-1"
             self.mock = mock_iam()
             self.mock.start()
-            self.client = get_boto3_client(profile=None, service="iam", region="us-east-1")
+            self.client = get_boto3_client(profile=None, service="iam", region=region)
 
             self.client.create_role(RoleName=MY_RESOURCE, AssumeRolePolicyDocument=json.dumps(constants.EC2_ASSUME_ROLE_POLICY))
-            self.example = IAMRole(name=MY_RESOURCE, region="us-east-1", client=self.client,
-                                   current_account_id="111122223333")
+            self.example = IAMRole(name=MY_RESOURCE, region=region, client=self.client,
+                                   current_account_id=current_account_id)
+            self.roles = IAMRoles(client=self.client, current_account_id=current_account_id, region=region)
+
+    def test_list_roles(self):
+        results = []
+        results.extend(self.roles.resources)
+        expected_results = ["arn:aws:iam::123456789012:role/test-resource-exposure"]
+        self.assertTrue(len(results) == 1)
+        arns = []
+        for resource in results:
+            arns.append(resource.arn)
+        self.assertListEqual(arns, expected_results)
 
     def test_get_rbp(self):
         expected_result = constants.EC2_ASSUME_ROLE_POLICY

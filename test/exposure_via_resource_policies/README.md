@@ -45,7 +45,10 @@
   * `list_layer_versions`: ❌ Not supported
   * `add_layer_version_permission`: ❌ Not supported
   * `remove_layer_version_permission`: ❌ Not supported
-* S3: Supported
+* S3:
+  * `get_bucket_policy`: ✅ Supported
+  * `put_bucket_policy`: ✅ Supported
+  * `list_buckets`: ✅ Supported
 * Secrets Manager
   * `list_secrets`: ✅ Supported
   * `get_resource_policy`: ✅ Supported

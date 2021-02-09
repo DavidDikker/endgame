@@ -32,7 +32,6 @@ class KmsKey(ResourceType, ABC):
         super().__init__(name, self.resource_type, self.service, region, client, current_account_id,
                          override_resource_block=self.override_resource_block)
 
-    # TODO: Translate the name into the ID
     @property
     def arn(self) -> str:
         return f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{self.name}"
