@@ -39,7 +39,7 @@ class S3TestCase(unittest.TestCase):
             ]
         }
         after = self.example.set_rbp(before)
-        self.assertDictEqual(before, after)
+        self.assertDictEqual(before, after.updated_policy)
 
     def test_add_myself(self):
         result = self.example.add_myself(evil_principal=EVIL_PRINCIPAL)

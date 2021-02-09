@@ -102,6 +102,7 @@ class LambdaLayer(ResourceType, ABC):
         for statement in self.policy_document.statements:
             if statement.sid == constants.SID_SIGNATURE:
                 if not dry_run:
+                    # TODO: Error handling for setting policy
                     self.client.remove_layer_version_permission(
                         LayerName=self.name,
                         VersionNumber=self.version,

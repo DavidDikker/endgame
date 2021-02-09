@@ -77,7 +77,6 @@ class ResourceType(object):
                                            resource_name=self.name, service=self.service)
         return response_message
 
-    # def undo(self, evil_principal: str, dry_run: bool = False) -> dict:
     def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Remove all traces"""
         policy_stripped = self.policy_document.policy_minus_evil_principal(

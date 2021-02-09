@@ -154,9 +154,9 @@ def expose_service(
         resource = acm_pca.AcmPrivateCertificateAuthority(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "ecr":
         resource = ecr.EcrRepository(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "efs":
+    elif service == "efs" or service == "elasticfilesystem":
         resource = efs.ElasticFileSystem(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "elasticsearch":
+    elif service == "elasticsearch" or service == "es":
         resource = elasticsearch.ElasticSearchDomain(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "glacier":
         resource = glacier_vault.GlacierVault(name=name, client=client, current_account_id=current_account_id, region=region)
@@ -164,11 +164,11 @@ def expose_service(
         resource = iam.IAMRole(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "kms":
         resource = kms.KmsKey(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "lambda":
+    elif service == "lambda":
         resource = lambda_function.LambdaFunction(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "lambda-layer":
+    elif service == "lambda-layer":
         resource = lambda_layer.LambdaLayer(name=name, client=client, current_account_id=current_account_id, region=region)
-    elif service == "logs":
+    elif service == "logs" or service == "cloudwatch":
         resource = cloudwatch_logs.CloudwatchResourcePolicy(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "s3":
         resource = s3.S3Bucket(name=name, client=client, current_account_id=current_account_id, region=region)

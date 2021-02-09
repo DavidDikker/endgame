@@ -31,7 +31,10 @@ class ElasticSearchDomain(ResourceType, ABC):
             response = self.client.describe_elasticsearch_domain_config(DomainName=self.name)
             domain_config = response.get("DomainConfig")
             policy = domain_config.get("AccessPolicies").get("Options")
-            policy = json.loads(policy)
+            if policy:
+                policy = json.loads(policy)
+            else:
+                policy = constants.get_empty_policy()
         except botocore.exceptions.ClientError:
             # When there is no policy, let's return an empty policy to avoid breaking things
             policy = constants.get_empty_policy()

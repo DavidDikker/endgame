@@ -110,19 +110,21 @@ def smash(service, evil_principal, profile, region, dry_run, undo, verbosity):
     for resource in results:
         name = resource.name
         region = resource.region
-        client = get_boto3_client(profile=profile, service=service, region=region)
-        response_message = smash_resource(service=service, region=region, name=name,
+        translated_service = utils.get_service_translation(provided_service=resource.service)
+        client = None
+        client = get_boto3_client(profile=profile, service=translated_service, region=region)
+        response_message = smash_resource(service=translated_service, region=region, name=name,
                                           current_account_id=current_account_id,
                                           client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
-
+        # TODO: If it fails, show the error message that it wasn't successful.
         if undo and not dry_run:
-            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type} {response_message.resource_name}: Remove {principal_type} named {principal_name}")
+            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Remove {principal_type} named {principal_name}")
         elif undo and dry_run:
-            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type} {response_message.resource_name}: Remove {principal_type} named {principal_name}")
+            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Remove {principal_type} named {principal_name}")
         elif not undo and dry_run:
-            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type} {response_message.resource_name}: Add {principal_type} named {principal_name}")
+            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Add {principal_type} named {principal_name}")
         else:
-            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type} {response_message.resource_name}: Add {principal_type} named {principal_name}")
+            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Add {principal_type} named {principal_name}")
 
 
 def smash_resource(

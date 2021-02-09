@@ -82,6 +82,7 @@ class SnsTopic(ResourceType, ABC):
         for statement in self.policy_document.statements:
             if statement.sid == constants.SID_SIGNATURE:
                 if not dry_run:
+                    # TODO: Error handling for setting policy
                     response = self.client.remove_permission(
                         TopicArn=self.arn,
                         Label=statement.sid,

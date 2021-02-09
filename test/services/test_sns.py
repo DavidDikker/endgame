@@ -126,9 +126,9 @@ class SnsTestCase(unittest.TestCase):
                 }
             ]
         }
-        results = self.example.set_rbp(example_sns_policy)
-        print(json.dumps(results, indent=4))
-        self.assertDictEqual(results, expected_results)
+        response = self.example.set_rbp(example_sns_policy)
+        print(json.dumps(response.updated_policy, indent=4))
+        self.assertDictEqual(response.updated_policy, expected_results)
 
     def test_set_rbp_by_removal(self):
         print(json.dumps(self.example.original_policy, indent=4))

@@ -72,6 +72,7 @@ class SqsQueue(ResourceType, ABC):
         for statement in self.policy_document.statements:
             if statement.sid == constants.SID_SIGNATURE:
                 if not dry_run:
+                    # TODO: Error handling for setting policy
                     self.client.remove_permission(
                         QueueUrl=self.queue_url,
                         Label=statement.sid,

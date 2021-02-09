@@ -129,6 +129,7 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
         if not self.policy_exists:
             message = f"The policy {constants.SID_SIGNATURE} does not exist."
         else:
+            # TODO: Error handling for setting policy
             self.client.delete_resource_policy(policyName=constants.SID_SIGNATURE)
             message = f"Deleted the CloudWatch resource policy named {constants.SID_SIGNATURE}"
         new_policy = constants.get_empty_policy()

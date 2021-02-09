@@ -137,6 +137,7 @@ class AcmPrivateCertificateAuthority(ResourceType, ABC):
         if not dry_run:
             # TODO: After you delete the policy, it still shows up in resource shares. Need to delete that.
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/acm-pca.html#ACMPCA.Client.delete_policy
+            # TODO: Error handling for setting policy
             self.client.delete_policy(ResourceArn=self.arn)
             message = f"Deleted the resource policy for {self.arn}"
         else:

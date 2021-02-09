@@ -91,6 +91,7 @@ class SesIdentityPolicy(ResourceType, ABC):
         # Update the list of identity policies
         if constants.SID_SIGNATURE in self._identity_policy_names():
             if not dry_run:
+                # TODO: Error handling for setting policy
                 self.client.delete_identity_policy(
                     Identity=self.name,
                     PolicyName=constants.SID_SIGNATURE
