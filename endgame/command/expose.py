@@ -4,7 +4,6 @@ Expose AWS resources
 import json
 import logging
 import click
-import termcolor
 import boto3
 from policy_sentry.util.arns import (
     parse_arn_for_resource_type,
@@ -84,14 +83,22 @@ CBLINK2 = '\33[6m'
     help="Undo the previous modifications and leave no trace",
 )
 @click.option(
+    "--cloak",
+    "-c",
+    is_flag=True,
+    default=False,
+    help="Evade detection by using the default AWS SDK user agent instead of one that indicates usage of this tool.",
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",
     count=True,
 )
-def expose(name, evil_principal, profile, service, region, dry_run, undo, verbosity):
+def expose(name, evil_principal, profile, service, region, dry_run, undo, cloak, verbosity):
     """
     Expose AWS resources
+
     :param name: The name of the AWS resource.
     :param evil_principal: The ARN of the evil principal to give access to the resource.
     :param profile: The AWS profile, if using the shared credentials file.
@@ -99,6 +106,7 @@ def expose(name, evil_principal, profile, service, region, dry_run, undo, verbos
     :param region: The AWS region. Defaults to us-east-1
     :param dry_run: Dry run, no modifications
     :param undo: Undo the previous modifications and leave no trace
+    :param cloak: Evade detection by using the default AWS SDK user agent instead of one that indicates usage of this tool.
     :param verbosity: Set log verbosity.
     :return:
     """
@@ -109,8 +117,8 @@ def expose(name, evil_principal, profile, service, region, dry_run, undo, verbos
     service = utils.get_service_translation(provided_service=service)
 
     # Get Boto3 clients
-    client = get_boto3_client(profile=profile, service=service, region=region)
-    sts_client = get_boto3_client(profile=profile, service="sts", region=region)
+    client = get_boto3_client(profile=profile, service=service, region=region, cloak=cloak)
+    sts_client = get_boto3_client(profile=profile, service="sts", region=region, cloak=cloak)
 
     # Get the current account ID
     current_account_id = get_current_account_id(sts_client=sts_client)

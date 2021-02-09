@@ -15,7 +15,7 @@ class EcrTestCase(unittest.TestCase):
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             self.mock = mock_ecr()
             self.mock.start()
-            self.client = get_boto3_client(profile=None, service="ecr", region="us-east-1")
+            self.client = get_boto3_client(profile=None, service="ecr", region="us-east-1", cloak=False)
             self.client.create_repository(repositoryName=MY_RESOURCE)
             # get_resource_policy has not been implemented by moto for ecr
             # self.example = EcrRepository(name=MY_RESOURCE, region="us-east-1", client=self.client,

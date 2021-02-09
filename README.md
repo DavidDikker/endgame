@@ -181,7 +181,6 @@ endgame smash --service all --undo
 * **Glue**: According to the [AWS documentation on AWS Glue Resource Policies](https://docs.aws.amazon.com/glue/latest/dg/glue-resource-policies.html), _"An AWS Glue resource policy can only be used to manage permissions for Data Catalog resources. You can't attach it to any other AWS Glue resources such as jobs, triggers, development endpoints, crawlers, or classifiers"_. This kind of data access is not as useful as destructive actions, at first glance. We are open to supporting this resource, but on pull requests only.
 
 
-
 ## Contributing
 
 ## Testing
