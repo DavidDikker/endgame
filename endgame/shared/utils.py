@@ -5,6 +5,8 @@ from policy_sentry.util.policy_files import get_sid_names_from_policy
 from policy_sentry.util.arns import get_account_from_arn
 from endgame.shared import constants
 logger = logging.getLogger(__name__)
+END = "\033[0m"
+GREY = "\33[90m"
 
 
 def get_sid_names_with_error_handling(policy):

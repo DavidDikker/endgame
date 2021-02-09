@@ -52,7 +52,7 @@ class LambdaLayer(ResourceType, ABC):
         )
         return policy_document
 
-    def set_rbp(self, evil_policy: dict) -> dict:
+    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
         new_policy_document = PolicyDocument(
             policy=evil_policy,
             service=self.service,
@@ -66,25 +66,33 @@ class LambdaLayer(ResourceType, ABC):
             "Statement": []
         }
         current_sids = get_sid_names_with_error_handling(self.original_policy)
-        for statement in new_policy_document.statements:
-            if statement.sid not in current_sids:
-                if ":" in statement.aws_principals[0]:
-                    account_id = get_account_from_arn(statement.aws_principals[0])
-                    principal = f"arn:aws:iam::{account_id}:root"
-                elif "*" == statement.aws_principals[0]:
-                    principal = "*"
-                else:
-                    principal = statement.aws_principals[0]
-                self.client.add_layer_version_permission(
-                    LayerName=self.arn_without_version,
-                    VersionNumber=self.version,
-                    StatementId=statement.sid,
-                    Action="lambda:GetLayerVersion",
-                    Principal=principal,
-                )
-            new_policy_json["Statement"].append(json.loads(statement.__str__()))
+        try:
+            for statement in new_policy_document.statements:
+                if statement.sid not in current_sids:
+                    if ":" in statement.aws_principals[0]:
+                        account_id = get_account_from_arn(statement.aws_principals[0])
+                        principal = f"arn:aws:iam::{account_id}:root"
+                    elif "*" == statement.aws_principals[0]:
+                        principal = "*"
+                    else:
+                        principal = statement.aws_principals[0]
+                    self.client.add_layer_version_permission(
+                        LayerName=self.arn_without_version,
+                        VersionNumber=self.version,
+                        StatementId=statement.sid,
+                        Action="lambda:GetLayerVersion",
+                        Principal=principal,
+                    )
+                new_policy_json["Statement"].append(json.loads(statement.__str__()))
+            message = "success"
+        except botocore.exceptions.ClientError as error:
+            message = str(error)
         policy_document = self._get_rbp()
-        return policy_document.json
+        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=policy_document.json, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
+        return response_message
 
     def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Wraps client.remove_permission"""
@@ -103,7 +111,8 @@ class LambdaLayer(ResourceType, ABC):
                 new_policy["Statement"].append(json.loads(statement.__str__()))
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=new_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
 

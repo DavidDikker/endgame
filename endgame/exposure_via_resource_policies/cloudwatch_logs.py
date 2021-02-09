@@ -98,20 +98,29 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
 
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=evil_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=evil_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
-    def set_rbp(self, evil_policy: dict) -> dict:
+    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
         new_policy = json.dumps(evil_policy)
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.put_resource_policy
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.put_destination_policy
         try:
             self.client.put_resource_policy(policyName=constants.SID_SIGNATURE, policyDocument=new_policy)
+            message = "success"
         except self.client.exceptions.InvalidParameterException as error:
             logger.debug(error)
-            logger.debug("Let's just try it again - AWS excepts it every other time lol.")
+            logger.debug("Let's just try it again - AWS accepts it every other time.")
             self.client.put_resource_policy(policyName=constants.SID_SIGNATURE, policyDocument=new_policy)
-        return evil_policy
+            message = str(error)
+        except botocore.exceptions.ClientError as error:
+            message = str(error)
+        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=evil_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
+        return response_message
 
     def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Remove all traces"""
@@ -125,7 +134,8 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
         new_policy = constants.get_empty_policy()
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=new_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
 

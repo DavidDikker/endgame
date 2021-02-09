@@ -66,11 +66,19 @@ class SesIdentityPolicy(ResourceType, ABC):
         )
         return policy_document
 
-    def set_rbp(self, evil_policy: dict) -> dict:
+    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
         new_policy = json.dumps(evil_policy)
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses.html#SES.Client.put_identity_policy
-        self.client.put_identity_policy(Identity=self.arn, PolicyName=constants.SID_SIGNATURE, Policy=new_policy)
-        return evil_policy
+        try:
+            self.client.put_identity_policy(Identity=self.arn, PolicyName=constants.SID_SIGNATURE, Policy=new_policy)
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses.html#SES.Client.put_identity_policy
+            message = "success"
+        except botocore.exceptions.ClientError as error:
+            message = str(error)
+        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=evil_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
+        return response_message
 
     def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Wraps client.delete_identity_policy"""
@@ -94,7 +102,8 @@ class SesIdentityPolicy(ResourceType, ABC):
             message = f"404: There is no policy titled {constants.SID_SIGNATURE} attached to {self.name}"
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=new_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
 

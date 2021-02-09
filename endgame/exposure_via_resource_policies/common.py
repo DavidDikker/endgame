@@ -52,7 +52,7 @@ class ResourceType(object):
         raise NotImplementedError("Must override arn")
 
     @abstractmethod
-    def set_rbp(self, evil_policy: dict) -> dict:
+    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
         raise NotImplementedError("Must override set_rbp")
 
     # def add_myself(self, evil_principal: str, dry_run: bool = False) -> dict:
@@ -64,16 +64,17 @@ class ResourceType(object):
             resource_arn=self.arn
         )
         if not dry_run:
-            new_policy = self.set_rbp(evil_policy=evil_policy)
+            set_rbp_response = self.set_rbp(evil_policy=evil_policy)
             operation = "ADD_MYSELF"
-            message = ""
+            message = set_rbp_response.message
         else:
-            new_policy = evil_policy
+            # new_policy = evil_policy
             operation = "DRY_RUN_ADD_MYSELF"
-            message = ""
+            message = "DRY_RUN_ADD_MYSELF"
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=evil_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
     # def undo(self, evil_principal: str, dry_run: bool = False) -> dict:
@@ -86,14 +87,17 @@ class ResourceType(object):
         )
         if not dry_run:
             operation = "UNDO"
-            new_policy = self.set_rbp(evil_policy=policy_stripped)
+            set_rbp_response = self.set_rbp(evil_policy=policy_stripped)
+            message = set_rbp_response.message
         else:
             operation = "DRY_RUN_UNDO"
-            new_policy = policy_stripped
+            # new_policy = policy_stripped
+            message = "DRY_RUN_UNDO"
 
-        response_message = ResponseMessage(message="", operation=operation, evil_principal=evil_principal,
+        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type, resource_name=self.name)
+                                           updated_policy=policy_stripped, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
         return response_message
 
 

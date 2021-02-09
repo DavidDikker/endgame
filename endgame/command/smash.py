@@ -4,6 +4,7 @@ Smash your AWS Account to pieces by exposing massive amounts of resources to a r
 import logging
 import click
 import boto3
+import tabulate
 from policy_sentry.util.arns import (
     parse_arn_for_resource_type,
     get_resource_path_from_arn,
@@ -97,6 +98,15 @@ def smash(service, evil_principal, profile, region, dry_run, undo, verbosity):
                                            current_account_id=current_account_id, client=client)
         results.extend(result.resources)
 
+    if undo and not dry_run:
+        utils.print_green("UNDO BACKDOOR:")
+    elif dry_run and not undo:
+        utils.print_red("CREATE BACKDOOR (DRY RUN):")
+    elif dry_run and undo:
+        utils.print_green("UNDO BACKDOOR (DRY RUN):")
+    else:
+        utils.print_red("CREATE_BACKDOOR:")
+
     for resource in results:
         name = resource.name
         region = resource.region
@@ -104,20 +114,15 @@ def smash(service, evil_principal, profile, region, dry_run, undo, verbosity):
         response_message = smash_resource(service=service, region=region, name=name,
                                           current_account_id=current_account_id,
                                           client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
+
         if undo and not dry_run:
-            utils.print_green(
-                f"Removed the {principal_type} with ARN {evil_principal} from the resource based policy for the "
-                f"{response_message.resource_type} named {response_message.resource_name}")
-        elif dry_run and not undo:
-            utils.print_red(
-                f"Will add {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
-        elif dry_run and undo:
-            utils.print_green(
-                f"Will remove the {principal_type} with ARN {evil_principal} from the resource based policy for the"
-                f" {response_message.resource_type} named {response_message.resource_name}")
+            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type} {response_message.resource_name}: Remove {principal_type} named {principal_name}")
+        elif undo and dry_run:
+            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type} {response_message.resource_name}: Remove {principal_type} named {principal_name}")
+        elif not undo and dry_run:
+            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type} {response_message.resource_name}: Add {principal_type} named {principal_name}")
         else:
-            utils.print_red(
-                f"Added the {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
+            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type} {response_message.resource_name}: Add {principal_type} named {principal_name}")
 
 
 def smash_resource(
