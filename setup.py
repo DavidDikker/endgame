@@ -35,7 +35,7 @@ setuptools.setup(
         "botocore",
         "boto3",
         "click",
-        "policy_sentry",
+        "policy_sentry>=0.11.5",
         "termcolor"
     ],
     classifiers=[
