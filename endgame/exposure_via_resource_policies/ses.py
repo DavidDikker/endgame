@@ -1,4 +1,3 @@
-import sys
 import logging
 import json
 import boto3
@@ -44,21 +43,23 @@ class SesIdentityPolicy(ResourceType, ABC):
         """Get the resource based policy for this resource and store it"""
         # If you do not know the names of the policies that are attached to the identity, you can use ListIdentityPolicies
         logger.debug("Getting resource policy for %s" % self.arn)
+        # When there is no policy, let's return an empty policy to avoid breaking things
+        policy = constants.get_empty_policy()
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses.html#SES.Client.list_identity_policies
             response = self.client.list_identity_policies(Identity=self.name)
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses.html#SES.Client.get_identity_policies
             policy_names = response.get("PolicyNames")
-            response = self.client.get_identity_policies(Identity=self.name, PolicyNames=policy_names)
-            policies = response.get("Policies")
-            if constants.SID_SIGNATURE in policies:
-                policy = json.loads(policies.get(constants.SID_SIGNATURE))
+            if policy_names:
+                response = self.client.get_identity_policies(Identity=self.name, PolicyNames=policy_names)
+                policies = response.get("Policies")
+                if constants.SID_SIGNATURE in policies:
+                    policy = json.loads(policies.get(constants.SID_SIGNATURE))
+                success = True
             else:
                 policy = constants.get_empty_policy()
-            success = True
+                success = True
         except botocore.exceptions.ClientError:
-            # When there is no policy, let's return an empty policy to avoid breaking things
-            policy = constants.get_empty_policy()
             success = False
         policy_document = PolicyDocument(
             policy=policy,

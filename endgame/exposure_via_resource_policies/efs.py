@@ -38,6 +38,9 @@ class ElasticFileSystem(ResourceType, ABC):
             response = self.client.describe_file_system_policy(FileSystemId=self.name)
             policy = json.loads(response.get("Policy"))
             success = True
+        except self.client.exceptions.PolicyNotFound as error:
+            policy = constants.get_empty_policy()
+            success = True
         except botocore.exceptions.ClientError:
             # When there is no policy, let's return an empty policy to avoid breaking things
             policy = constants.get_empty_policy()
