@@ -11,6 +11,7 @@ from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.utils import get_sid_names_with_error_handling
 from endgame.shared.response_message import ResponseMessage
 from endgame.shared.list_resources_response import ListResourcesResponse
+from endgame.shared.response_message import ResponseGetRbp
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +41,9 @@ class SqsQueue(ResourceType, ABC):
         )
         return response.get("QueueUrl")
 
-    def _get_rbp(self) -> PolicyDocument:
+    def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
+        logger.debug("Getting resource policy for %s" % self.arn)
         queue_url = self._queue_url()
         policy = constants.get_empty_policy()
         try:
@@ -51,9 +53,11 @@ class SqsQueue(ResourceType, ABC):
             if attributes.get("Policy"):
                 policy = constants.get_empty_policy()
                 policy["Statement"].extend(json.loads(attributes.get("Policy")).get("Statement"))
+            success = True
         except botocore.exceptions.ClientError as error:
             # When there is no policy, let's return an empty policy to avoid breaking things
             logger.critical(error)
+            success = False
         policy_document = PolicyDocument(
             policy=policy,
             service=self.service,
@@ -62,51 +66,11 @@ class SqsQueue(ResourceType, ABC):
             override_resource_block=self.override_resource_block,
             override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
         )
-        return policy_document
-
-    def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
-        """Wraps client.remove_permission"""
-        new_policy = constants.get_empty_policy()
-        operation = "UNDO"
-        message = "404: No backdoor statement found"
-        for statement in self.policy_document.statements:
-            if statement.sid == constants.SID_SIGNATURE:
-                if not dry_run:
-                    # TODO: Error handling for setting policy
-                    self.client.remove_permission(
-                        QueueUrl=self.queue_url,
-                        Label=statement.sid,
-                    )
-                    message = f"200: Removed backdoor statement from the resource policy attached to {self.arn}"
-                    break
-            else:
-                new_policy["Statement"].append(json.loads(statement.__str__()))
-        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
-                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type,
-                                           resource_name=self.name, service=self.service)
-        return response_message
-
-    def sqs_actions_without_prefixes(self, actions_with_service_prefix):
-        # SQS boto3 client requires that you provide SendMessage instead of sqs:SendMessage
-        updated_actions = []
-
-        if isinstance(actions_with_service_prefix, list):
-            actions = actions_with_service_prefix
-        else:
-            actions = [actions_with_service_prefix]
-        for action in actions:
-            if ":" in action:
-                temp_action = action.split(":")[1]
-                if temp_action == "*":
-                    updated_actions.extend("*")
-                else:
-                    updated_actions.append(temp_action)
-            else:
-                updated_actions.append(action)
-        return updated_actions
+        response = ResponseGetRbp(policy_document=policy_document, success=success)
+        return response
 
     def set_rbp(self, evil_policy: dict) -> ResponseMessage:
+        logger.debug("Setting resource policy for %s" % self.arn)
         new_policy_document = PolicyDocument(
             policy=evil_policy,
             service=self.service,
@@ -136,14 +100,61 @@ class SqsQueue(ResourceType, ABC):
                 else:
                     new_policy_json["Statement"].append(json.loads(statement.__str__()))
             message = "success"
+            success = True
         except botocore.exceptions.ClientError as error:
             message = str(error)
-        policy_document = self._get_rbp()
-        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+            success = False
+        get_rbp_response = self._get_rbp()
+        response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=policy_document.json, resource_type=self.resource_type,
+                                           updated_policy=get_rbp_response.policy_document.json, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)
         return response_message
+
+    def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
+        """Wraps client.remove_permission"""
+        logger.debug(f"Removing {evil_principal} from {self.arn}")
+        new_policy = constants.get_empty_policy()
+        operation = "UNDO"
+        message = "404: No backdoor statement found"
+        success = False
+        for statement in self.policy_document.statements:
+            if statement.sid == constants.SID_SIGNATURE:
+                if not dry_run:
+                    # TODO: Error handling for setting policy
+                    self.client.remove_permission(
+                        QueueUrl=self.queue_url,
+                        Label=statement.sid,
+                    )
+                    message = f"200: Removed backdoor statement from the resource policy attached to {self.arn}"
+                    success = True
+                    break
+            else:
+                new_policy["Statement"].append(json.loads(statement.__str__()))
+        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=new_policy, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service, success=success)
+        return response_message
+
+    def sqs_actions_without_prefixes(self, actions_with_service_prefix):
+        # SQS boto3 client requires that you provide SendMessage instead of sqs:SendMessage
+        updated_actions = []
+
+        if isinstance(actions_with_service_prefix, list):
+            actions = actions_with_service_prefix
+        else:
+            actions = [actions_with_service_prefix]
+        for action in actions:
+            if ":" in action:
+                temp_action = action.split(":")[1]
+                if temp_action == "*":
+                    updated_actions.extend("*")
+                else:
+                    updated_actions.append(temp_action)
+            else:
+                updated_actions.append(action)
+        return updated_actions
 
 
 class SqsQueues(ResourceTypes):

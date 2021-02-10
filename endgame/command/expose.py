@@ -126,22 +126,21 @@ def expose(name, evil_principal, profile, service, region, dry_run, undo, cloak,
     principal_name = get_resource_path_from_arn(evil_principal)
 
     response_message = expose_service(provided_service=provided_service, region=region, name=name, current_account_id=current_account_id, client=client, dry_run=dry_run, evil_principal=evil_principal, undo=undo)
-    print_diff_messages(response_message=response_message, verbosity=verbosity)
 
     if undo and not dry_run:
-        utils.print_green("OPERATION: UNDO")
-        utils.print_green(f"Removed the {principal_type} with ARN {evil_principal} from the resource based policy for the "
-                    f"{response_message.resource_type} named {response_message.resource_name}")
-    elif dry_run and not undo:
-        utils.print_red(f"OPERATION: DRY_RUN_ADD_MYSELF")
-        utils.print_red(f"Will add {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
-    elif dry_run and undo:
-        utils.print_green("OPERATION: DRY_RUN_UNDO")
-        utils.print_green(f"Will remove the {principal_type} with ARN {evil_principal} from the resource based policy for the"
-                    f" {response_message.resource_type} named {response_message.resource_name}")
+        utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name,
+                           principal_type, principal_name, success=response_message.success)
+    elif undo and dry_run:
+        utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name,
+                           principal_type, principal_name, success=response_message.success)
+    elif not undo and dry_run:
+        utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name,
+                        principal_type, principal_name, success=response_message.success)
     else:
-        utils.print_red(f"OPERATION: ADD_MYSELF")
-        utils.print_red(f"Added the {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
+        utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name,
+                        principal_type, principal_name, success=response_message.success)
+    if verbosity >= 1:
+        print_diff_messages(response_message=response_message, verbosity=verbosity)
 
 
 def expose_service(
@@ -210,17 +209,17 @@ def print_diff_messages(response_message: ResponseMessage, verbosity: int):
     if response_message.added_sids:
         logger.debug("Statements are being added")
         diff = response_message.added_sids
-        utils.print_yellow(f"+ Resource: {response_message.victim_resource_arn}")
-        utils.print_green(f"++ (New statements): {', '.join(diff)}")
-        utils.print_green(f"++ (Evil Principal): {response_message.evil_principal}")
+        utils.print_yellow(f"\t+ Resource: {response_message.victim_resource_arn}")
+        utils.print_green(f"\t++ (New statements): {', '.join(diff)}")
+        utils.print_green(f"\t++ (Evil Principal): {response_message.evil_principal}")
     elif len(response_message.updated_policy_sids) == len(response_message.original_policy_sids):
-        utils.print_yellow(f"* Resource: {response_message.victim_resource_arn}")
-        utils.print_yellow(f"** (No new statements)")
+        utils.print_yellow(f"\t* Resource: {response_message.victim_resource_arn}")
+        utils.print_yellow(f"\t** (No new statements)")
     else:
-        utils.print_grey("Statements are being removed")
+        logger.debug("Statements are being removed")
         diff = response_message.removed_sids
-        utils.print_yellow(f"- Resource: {response_message.victim_resource_arn}")
-        utils.print_red(f"-- Statements being removed: {', '.join(diff)}")
+        utils.print_yellow(f"\t- Resource: {response_message.victim_resource_arn}")
+        utils.print_red(f"\t-- Statements being removed: {', '.join(diff)}")
 
     if verbosity >= 3:
         utils.print_grey("Original policy:")

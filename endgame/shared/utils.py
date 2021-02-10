@@ -1,9 +1,11 @@
 import copy
 import logging
 import termcolor
+from colorama import Fore, Back
 from policy_sentry.util.policy_files import get_sid_names_from_policy
 from policy_sentry.util.arns import get_account_from_arn
 from endgame.shared import constants
+
 logger = logging.getLogger(__name__)
 END = "\033[0m"
 GREY = "\33[90m"
@@ -111,4 +113,27 @@ def print_green(string):
 def print_grey(string):
     print(f"{GREY}{string}{END}")
     # Color code from here: https://stackoverflow.com/a/39452138
+
+
+def print_remove(service: str, resource_type: str, resource_name: str, principal_type: str, principal_name: str, success: bool):
+    resource_message_string = f"{service.upper()} {resource_type.capitalize()} {resource_name}:"
+    remove_string = f"Remove {principal_type} {principal_name}"
+    if success:
+        success_string = f"{Back.GREEN}SUCCESS{END}"
+    else:
+        success_string = f"{Fore.RED}FAILED{END}"
+    message = f"{resource_message_string:<}: {remove_string}"
+    print_blue(f"{message:<100}{success_string:>20}")
+
+
+def print_add(service: str, resource_type: str, resource_name: str, principal_type: str, principal_name: str, success: bool):
+    resource_message_string = f"{service.upper()} {resource_type.capitalize()} {resource_name}"
+    add_string = f"Add {principal_type} {principal_name}"
+    if success:
+        success_string = f"{Fore.GREEN}SUCCESS{END}"
+    else:
+        success_string = f"{Fore.RED}FAILED{END}"
+    message = f"{resource_message_string:<}: {add_string}"
+    print_blue(f"{message:<100}{success_string:>20}")
+
 

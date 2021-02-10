@@ -17,6 +17,7 @@ from endgame.command.expose import expose_service
 from endgame.shared.response_message import ResponseMessage
 
 logger = logging.getLogger(__name__)
+END = "\033[0m"
 
 
 @click.command(name="smash", short_help="Smash your AWS Account to pieces by exposing massive amounts of resources to a"
@@ -125,15 +126,14 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, verbos
         response_message = smash_resource(service=translated_service, region=region, name=name,
                                           current_account_id=current_account_id,
                                           client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
-        # TODO: If it fails, show the error message that it wasn't successful.
         if undo and not dry_run:
-            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Remove {principal_type} {principal_name}")
+            utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
         elif undo and dry_run:
-            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Remove {principal_type} {principal_name}")
+            utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
         elif not undo and dry_run:
-            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Add {principal_type} {principal_name}")
+            utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
         else:
-            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Add {principal_type} {principal_name}")
+            utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
 
 
 def smash_resource(

