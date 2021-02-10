@@ -75,9 +75,6 @@ def change_policy_principal_from_arn_to_account_id(policy: dict) -> dict:
                     # case: principal = "999888777"
                     else:
                         new_account_ids.append(principal)
-                # new_statement = copy.deepcopy(statement)
-                # new_statement["Principal"]["AWS"] = new_account_ids
-            # case: statement["Principal"]["AWS"] = str()
             else:
                 if aws_principal == "*":
                     new_account_ids.append(aws_principal)
@@ -119,7 +116,7 @@ def print_remove(service: str, resource_type: str, resource_name: str, principal
     resource_message_string = f"{service.upper()} {resource_type.capitalize()} {resource_name}:"
     remove_string = f"Remove {principal_type} {principal_name}"
     if success:
-        success_string = f"{Back.GREEN}SUCCESS{END}"
+        success_string = f"{Fore.GREEN}SUCCESS{END}"
     else:
         success_string = f"{Fore.RED}FAILED{END}"
     message = f"{resource_message_string:<}: {remove_string}"
