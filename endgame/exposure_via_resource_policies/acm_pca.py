@@ -36,19 +36,25 @@ class AcmPrivateCertificateAuthority(ResourceType, ABC):
 
     @property
     def arn(self) -> str:
-        return self.name
-        # return f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{self.name}"
+        # return self.name
+        return f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{self.name}"
 
     def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
+        policy = constants.get_empty_policy()
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/acm-pca.html#ACMPCA.Client.get_policy
-            response = self.client.get_policy(ResourceArn=self.name)
+            response = self.client.get_policy(ResourceArn=self.arn)
             policy = json.loads(response.get("Policy"))
+            success = True
+        # This is dumb. "If either the private CA resource or the policy cannot be found, this action returns a ResourceNotFoundException."
+        # That means we have to set it to true, even when the resource doesn't exist. smh.
+        # That will only affect the expose command and not the smash command.
+        except self.client.exceptions.ResourceNotFoundException:
+            logger.debug(f"Resource {self.name} not found")
             success = True
         except botocore.exceptions.ClientError:
             # When there is no policy, let's return an empty policy to avoid breaking things
-            policy = constants.get_empty_policy()
             success = False
         policy_document = PolicyDocument(
             policy=policy,

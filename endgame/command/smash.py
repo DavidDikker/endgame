@@ -103,7 +103,8 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, verbos
         results = get_all_resources_for_all_services(profile=profile, region=region,
                                                      current_account_id=current_account_id, cloak=cloak)
     else:
-        client = get_boto3_client(profile=profile, service=service, region=region, cloak=cloak)
+        translated_service = utils.get_service_translation(provided_service=service)
+        client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
         result = list_resources_by_service(provided_service=service, region=region,
                                            current_account_id=current_account_id, client=client)
         results.extend(result.resources)

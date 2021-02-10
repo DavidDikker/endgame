@@ -31,14 +31,18 @@ class GlacierVault(ResourceType, ABC):
     def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
         logger.debug("Getting resource policy for %s" % self.arn)
+        # When there is no policy, let's return an empty policy to avoid breaking things
+        policy = constants.get_empty_policy()
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glacier.html#Glacier.Client.get_vault_access_policy
             response = self.client.get_vault_access_policy(vaultName=self.name)
             policy = json.loads(response.get("policy").get("Policy"))
             success = True
+        # This is silly. If there is no access policy set on the vault, then it returns the same error as if the vault didn't exist.
+        except self.client.exceptions.ResourceNotFoundException as error:
+            logger.debug(error)
+            success = True
         except botocore.exceptions.ClientError:
-            # When there is no policy, let's return an empty policy to avoid breaking things
-            policy = constants.get_empty_policy()
             success = False
         policy_document = PolicyDocument(
             policy=policy,

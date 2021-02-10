@@ -32,14 +32,20 @@ class EcrRepository(ResourceType, ABC):
     def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
         logger.debug("Getting resource policy for %s" % self.arn)
+        policy = constants.get_empty_policy()
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr.html#ECR.Client.get_repository_policy
             response = self.client.get_repository_policy(repositoryName=self.name)
             policy = json.loads(response.get("policyText"))
             success = True
+        except self.client.exceptions.RepositoryPolicyNotFoundException:
+            logger.debug("Policy not found. Setting policy document to empty.")
+            success = True
+        except self.client.exceptions.RepositoryNotFoundException:
+            logger.critical("Repository does not exist")
+            success = False
         except botocore.exceptions.ClientError:
             # When there is no policy, let's return an empty policy to avoid breaking things
-            policy = constants.get_empty_policy()
             success = False
         policy_document = PolicyDocument(
             policy=policy,
