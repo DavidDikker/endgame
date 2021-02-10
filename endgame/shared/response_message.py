@@ -7,16 +7,17 @@ import logging
 from policy_sentry.util.arns import get_resource_path_from_arn
 from endgame.shared.validate import validate_basic_policy_json
 from endgame.shared import utils
+from endgame.shared.policy_document import PolicyDocument
 logger = logging.getLogger(__name__)
 
 
 class ResponseMessage:
-    def __init__(self, message: str, operation: str, victim_resource_arn: str, evil_principal: str,
+    def __init__(self, message: str, operation: str, success: bool, victim_resource_arn: str, evil_principal: str,
                  original_policy: dict, updated_policy: dict, resource_type: str, resource_name: str, service: str):
         self.message = message
         self.operation = operation
         # Operation:  ADD_MYSELF, DRY_RUN_ADD_MYSELF, UNDO, DRY_RUN_UNDO, LIST
-        # self.message_code = message_code
+        self.success = success
         self.evil_principal = evil_principal
         self.victim_resource_arn = victim_resource_arn
         self.original_policy = validate_basic_policy_json(original_policy)
@@ -56,3 +57,9 @@ class ResponseMessage:
         if len(self.original_policy_sids) > len(self.updated_policy_sids):
             diff = list(set(self.original_policy_sids) - set(self.updated_policy_sids))
         return diff
+
+
+class ResponseGetRbp:
+    def __init__(self, policy_document, success):
+        self.policy_document = policy_document
+        self.success = success

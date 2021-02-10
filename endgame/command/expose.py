@@ -130,15 +130,15 @@ def expose(name, evil_principal, profile, service, region, dry_run, undo, cloak,
 
     if undo and not dry_run:
         utils.print_green("OPERATION: UNDO")
-        utils.print_green(f"Removed the {principal_type} with ARN {evil_principal} from the resource based policy for the "
-                    f"{response_message.resource_type} named {response_message.resource_name}")
+        utils.print_green(f"Removed the {principal_type} with ARN {evil_principal} from the resource based policy for "
+                          f"the {response_message.resource_type} named {response_message.resource_name}")
     elif dry_run and not undo:
         utils.print_red(f"OPERATION: DRY_RUN_ADD_MYSELF")
         utils.print_red(f"Will add {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")
     elif dry_run and undo:
         utils.print_green("OPERATION: DRY_RUN_UNDO")
-        utils.print_green(f"Will remove the {principal_type} with ARN {evil_principal} from the resource based policy for the"
-                    f" {response_message.resource_type} named {response_message.resource_name}")
+        utils.print_green(f"Will remove the {principal_type} with ARN {evil_principal} from the resource based policy "
+                          f"for the {response_message.resource_type} named {response_message.resource_name}")
     else:
         utils.print_red(f"OPERATION: ADD_MYSELF")
         utils.print_red(f"Added the {principal_type} named {principal_name} to the {response_message.resource_type} {response_message.resource_name}")

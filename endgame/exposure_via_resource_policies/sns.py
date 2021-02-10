@@ -11,6 +11,7 @@ from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.utils import get_sid_names_with_error_handling
 from endgame.shared.response_message import ResponseMessage
 from endgame.shared.list_resources_response import ListResourcesResponse
+from endgame.shared.response_message import ResponseGetRbp
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +49,9 @@ class SnsTopic(ResourceType, ABC):
     def arn(self) -> str:
         return f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.name}"
 
-    def _get_rbp(self) -> PolicyDocument:
+    def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
+        logger.debug("Getting resource policy for %s" % self.arn)
         # When there is no policy, let's return an empty policy to avoid breaking things
         policy = constants.get_empty_policy()
         try:
@@ -60,10 +62,13 @@ class SnsTopic(ResourceType, ABC):
                 policy["Statement"].extend(json.loads(attributes.get("Policy")).get("Statement"))
             else:
                 policy = constants.get_empty_policy()
+            success = True
         except self.client.exceptions.ResourceNotFoundException as error:
             logger.critical(error)
+            success = False
         except botocore.exceptions.ClientError as error:
             logger.critical(error)
+            success = False
         policy_document = PolicyDocument(
             policy=policy,
             service=self.service,
@@ -72,30 +77,11 @@ class SnsTopic(ResourceType, ABC):
             override_resource_block=self.override_resource_block,
             override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
         )
-        return policy_document
-
-    def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
-        """Wraps client.remove_permission"""
-        new_policy = constants.get_empty_policy()
-        operation = "UNDO"
-        message = "404: No backdoor statement found"
-        for statement in self.policy_document.statements:
-            if statement.sid == constants.SID_SIGNATURE:
-                if not dry_run:
-                    # TODO: Error handling for setting policy
-                    response = self.client.remove_permission(
-                        TopicArn=self.arn,
-                        Label=statement.sid,
-                    )
-            else:
-                new_policy["Statement"].append(json.loads(statement.__str__()))
-        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
-                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type,
-                                           resource_name=self.name, service=self.service)
-        return response_message
+        response = ResponseGetRbp(policy_document=policy_document, success=success)
+        return response
 
     def set_rbp(self, evil_policy: dict) -> ResponseMessage:
+        logger.debug("Setting resource policy for %s" % self.arn)
         new_policy_document = PolicyDocument(
             policy=evil_policy,
             service=self.service,
@@ -120,12 +106,43 @@ class SnsTopic(ResourceType, ABC):
                     )
                 new_policy_json["Statement"].append(json.loads(statement.__str__()))
             message = "success"
+            success = True
         except botocore.exceptions.ClientError as error:
             message = str(error)
+            success = False
+            logger.critical(f"Operation was not successful for {self.service} {self.resource_type} "
+                            f"{self.name}. %s" % error)
         policy_document = self._get_rbp()
-        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+        response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=policy_document.json, resource_type=self.resource_type,
+                                           resource_name=self.name, service=self.service)
+        return response_message
+
+    def undo(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
+        """Wraps client.remove_permission"""
+        logger.debug(f"Removing {evil_principal} from {self.arn}")
+        new_policy = constants.get_empty_policy()
+        operation = "UNDO"
+        message = "404: No backdoor statement found"
+        try:
+            for statement in self.policy_document.statements:
+                if statement.sid == constants.SID_SIGNATURE:
+                    if not dry_run:
+                        response = self.client.remove_permission(
+                            TopicArn=self.arn,
+                            Label=statement.sid,
+                        )
+                else:
+                    new_policy["Statement"].append(json.loads(statement.__str__()))
+            success = True
+        except botocore.exceptions.ClientError as error:
+            success = False
+            logger.critical(f"Operation was not successful for {self.service} {self.resource_type} "
+                            f"{self.name}. %s" % error)
+        response_message = ResponseMessage(message=message, operation=operation, success=success, evil_principal=evil_principal,
+                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
+                                           updated_policy=new_policy, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)
         return response_message
 

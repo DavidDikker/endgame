@@ -9,31 +9,38 @@ from endgame.exposure_via_resource_policies.common import ResourceType, Resource
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.list_resources_response import ListResourcesResponse
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.response_message import ResponseGetRbp
 
 logger = logging.getLogger(__name__)
 
 
 class EcrRepository(ResourceType, ABC):
     def __init__(self, name: str, region: str, client: boto3.Session.client, current_account_id: str):
-        service = "ecr"
-        resource_type = "repository"
+        self.service = "ecr"
+        self.resource_type = "repository"
+        self.region = region
+        self.current_account_id = current_account_id
+        self.name = name
         self.include_resource_block = False
-        super().__init__(name, resource_type, service, region, client, current_account_id,
+        super().__init__(name, self.resource_type, self.service, region, client, current_account_id,
                          include_resource_block=self.include_resource_block)
 
     @property
     def arn(self) -> str:
         return f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{self.name}"
 
-    def _get_rbp(self) -> PolicyDocument:
+    def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
+        logger.debug("Getting resource policy for %s" % self.arn)
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr.html#ECR.Client.get_repository_policy
             response = self.client.get_repository_policy(repositoryName=self.name)
             policy = json.loads(response.get("policyText"))
+            success = True
         except botocore.exceptions.ClientError:
             # When there is no policy, let's return an empty policy to avoid breaking things
             policy = constants.get_empty_policy()
+            success = False
         policy_document = PolicyDocument(
             policy=policy,
             service=self.service,
@@ -42,17 +49,21 @@ class EcrRepository(ResourceType, ABC):
             override_resource_block=self.override_resource_block,
             override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
         )
-        return policy_document
+        response = ResponseGetRbp(policy_document=policy_document, success=success)
+        return response
 
     def set_rbp(self, evil_policy: dict) -> ResponseMessage:
+        logger.debug("Setting resource policy for %s" % self.arn)
         new_policy = json.dumps(evil_policy)
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr.html#ECR.Client.set_repository_policy
             self.client.set_repository_policy(repositoryName=self.name, policyText=new_policy)
             message = "success"
+            success = True
         except botocore.exceptions.ClientError as error:
             message = str(error)
-        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+            success = False
+        response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=evil_policy, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)

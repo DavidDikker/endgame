@@ -9,6 +9,7 @@ from endgame.exposure_via_resource_policies.common import ResourceType, Resource
 from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.list_resources_response import ListResourcesResponse
 from endgame.shared.response_message import ResponseMessage
+from endgame.shared.response_message import ResponseGetRbp
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +28,18 @@ class GlacierVault(ResourceType, ABC):
     def arn(self) -> str:
         return f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{self.name}"
 
-    def _get_rbp(self) -> PolicyDocument:
+    def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
+        logger.debug("Getting resource policy for %s" % self.arn)
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glacier.html#Glacier.Client.get_vault_access_policy
             response = self.client.get_vault_access_policy(vaultName=self.name)
             policy = json.loads(response.get("policy").get("Policy"))
+            success = True
         except botocore.exceptions.ClientError:
             # When there is no policy, let's return an empty policy to avoid breaking things
             policy = constants.get_empty_policy()
+            success = False
         policy_document = PolicyDocument(
             policy=policy,
             service=self.service,
@@ -44,17 +48,21 @@ class GlacierVault(ResourceType, ABC):
             override_resource_block=self.override_resource_block,
             override_account_id_instead_of_principal=self.override_account_id_instead_of_principal,
         )
-        return policy_document
+        response = ResponseGetRbp(policy_document=policy_document, success=success)
+        return response
 
     def set_rbp(self, evil_policy: dict) -> ResponseMessage:
+        logger.debug("Setting resource policy for %s" % self.arn)
         new_policy = json.dumps(evil_policy)
         try:
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glacier.html#Glacier.Client.set_vault_access_policy
             self.client.set_vault_access_policy(vaultName=self.name, policy={"Policy": new_policy})
             message = "success"
+            success = True
         except botocore.exceptions.ClientError as error:
             message = str(error)
-        response_message = ResponseMessage(message=message, operation="set_rbp", evil_principal="",
+            success = False
+        response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=evil_policy, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)
