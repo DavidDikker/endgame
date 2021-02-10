@@ -90,8 +90,12 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, verbos
     # Get the current account ID
     sts_client = get_boto3_client(profile=profile, service="sts", region=region, cloak=cloak)
     current_account_id = get_current_account_id(sts_client=sts_client)
-    principal_type = parse_arn_for_resource_type(evil_principal)
-    principal_name = get_resource_path_from_arn(evil_principal)
+    if evil_principal.strip('"').strip("'") == "*":
+        principal_type = "internet-wide access"
+        principal_name = "*"
+    else:
+        principal_type = parse_arn_for_resource_type(evil_principal)
+        principal_name = get_resource_path_from_arn(evil_principal)
     results = []
     if service == "all":
         # TODO: Big scary warning message and confirmation
@@ -123,13 +127,13 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, verbos
                                           client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
         # TODO: If it fails, show the error message that it wasn't successful.
         if undo and not dry_run:
-            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Remove {principal_type} named {principal_name}")
+            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Remove {principal_type} {principal_name}")
         elif undo and dry_run:
-            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Remove {principal_type} named {principal_name}")
+            utils.print_green(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Remove {principal_type} {principal_name}")
         elif not undo and dry_run:
-            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Add {principal_type} named {principal_name}")
+            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Add {principal_type} {principal_name}")
         else:
-            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Add {principal_type} named {principal_name}")
+            utils.print_red(f"{response_message.service.upper()} {response_message.resource_type.capitalize()} {response_message.resource_name}: Add {principal_type} {principal_name}")
 
 
 def smash_resource(

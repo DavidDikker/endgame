@@ -25,16 +25,19 @@ def click_validate_user_or_principal_arn(ctx, param, value):
 
 
 def validate_user_or_principal_arn(arn: str):
-    service = get_service_from_arn(arn)
-    resource_type = parse_arn_for_resource_type(arn)
-    # Make sure it is an IAM ARN
-    if service != "iam":
-        raise Exception("Please supply a valid IAM principal ARN (a user or a role)")
-    # Make sure that it is a user or a role
-    elif resource_type not in ["user", "role"]:
-        raise Exception("Please supply a valid IAM principal ARN (a user or a role)")
-    else:
+    if arn.strip('"').strip("'") == "*":
         return True
+    else:
+        service = get_service_from_arn(arn)
+        resource_type = parse_arn_for_resource_type(arn)
+        # Make sure it is an IAM ARN
+        if service != "iam":
+            raise Exception("Please supply a valid IAM principal ARN (a user or a role)")
+        # Make sure that it is a user or a role
+        elif resource_type not in ["user", "role"]:
+            raise Exception("Please supply a valid IAM principal ARN (a user or a role)")
+        else:
+            return True
 
 
 def validate_basic_policy_json(policy_json: dict) -> dict:
