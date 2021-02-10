@@ -104,10 +104,10 @@ class SqsQueue(ResourceType, ABC):
         except botocore.exceptions.ClientError as error:
             message = str(error)
             success = False
-        policy_document = self._get_rbp()
+        get_rbp_response = self._get_rbp()
         response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=policy_document.json, resource_type=self.resource_type,
+                                           updated_policy=get_rbp_response.policy_document.json, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)
         return response_message
 
@@ -117,6 +117,7 @@ class SqsQueue(ResourceType, ABC):
         new_policy = constants.get_empty_policy()
         operation = "UNDO"
         message = "404: No backdoor statement found"
+        success = False
         for statement in self.policy_document.statements:
             if statement.sid == constants.SID_SIGNATURE:
                 if not dry_run:
@@ -126,13 +127,14 @@ class SqsQueue(ResourceType, ABC):
                         Label=statement.sid,
                     )
                     message = f"200: Removed backdoor statement from the resource policy attached to {self.arn}"
+                    success = True
                     break
             else:
                 new_policy["Statement"].append(json.loads(statement.__str__()))
         response_message = ResponseMessage(message=message, operation=operation, evil_principal=evil_principal,
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=new_policy, resource_type=self.resource_type,
-                                           resource_name=self.name, service=self.service)
+                                           resource_name=self.name, service=self.service, success=success)
         return response_message
 
     def sqs_actions_without_prefixes(self, actions_with_service_prefix):

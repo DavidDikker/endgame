@@ -112,10 +112,10 @@ class SnsTopic(ResourceType, ABC):
             success = False
             logger.critical(f"Operation was not successful for {self.service} {self.resource_type} "
                             f"{self.name}. %s" % error)
-        policy_document = self._get_rbp()
+        get_rbp_response = self._get_rbp()
         response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
-                                           updated_policy=policy_document.json, resource_type=self.resource_type,
+                                           updated_policy=get_rbp_response.policy_document.json, resource_type=self.resource_type,
                                            resource_name=self.name, service=self.service)
         return response_message
 
