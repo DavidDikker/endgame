@@ -1,7 +1,6 @@
 """
 Smash your AWS Account to pieces by exposing massive amounts of resources to a rogue principal or to the internet
 """
-import sys
 import logging
 import click
 import boto3
@@ -9,7 +8,6 @@ from policy_sentry.util.arns import (
     parse_arn_for_resource_type,
     get_resource_path_from_arn,
 )
-from colorama import Fore, Back, Style
 from endgame import set_log_level
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared.validate import click_validate_supported_aws_service, click_validate_user_or_principal_arn
@@ -128,53 +126,15 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, verbos
         response_message = smash_resource(service=translated_service, region=region, name=name,
                                           current_account_id=current_account_id,
                                           client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
-        # TODO: If it fails, show the error message that it wasn't successful.
         if undo and not dry_run:
-            print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+            utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
         elif undo and dry_run:
-            print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+            utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
         elif not undo and dry_run:
-            print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+            utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
         else:
-            print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+            utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
 
-
-def print_remove(service: str, resource_type: str, resource_name: str, principal_type: str, principal_name: str, success: bool):
-    resource_message_string = f"{service.upper()} {resource_type.capitalize()} {resource_name}:"
-    remove_string = f"Remove {principal_type} {principal_name}"
-    width = [15, 10]
-    if success:
-        success_string = f"{Back.GREEN}SUCCESS{END}"
-    else:
-        success_string = f"{Fore.RED}FAILED{END}"
-    # success_string = str(success)
-    message = f"{resource_message_string:<}: {remove_string}"
-    utils.print_blue(f"{message:<100}{success_string:>20}")
-
-
-def print_add(service: str, resource_type: str, resource_name: str, principal_type: str, principal_name: str, success: bool):
-    resource_message_string = f"{service.upper()} {resource_type.capitalize()} {resource_name}"
-    add_string = f"Add {principal_type} {principal_name}"
-    if success:
-        success_string = f"{Fore.GREEN}SUCCESS{END}"
-    else:
-        success_string = f"{Fore.RED}FAILED{END}"
-    message = f"{resource_message_string:<}: {add_string}"
-    utils.print_blue(f"{message:<100}{success_string:>20}")
-
-
-def stdout(message):
-    # sys.stdout.write(message)
-    # sys.stdout.write('\b' * len(message))   # \b: non-deleting backspace
-    print(message)
-    print('\b' * len(message))   # \b: non-deleting backspace
-
-
-def demo():
-    stdout('Right'.rjust(50))
-    stdout('Left')
-    sys.stdout.flush()
-    print()
 
 def smash_resource(
         service: str,
