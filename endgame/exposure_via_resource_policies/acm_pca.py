@@ -126,7 +126,8 @@ class AcmPrivateCertificateAuthority(ResourceType, ABC):
         if dry_run:
             operation = "DRY_RUN_ADD_MYSELF"
             message = operation
-            success = True
+            tmp = self._get_rbp()
+            success = tmp.success
         else:
             operation = "ADD_MYSELF"
             self.undo(evil_principal=evil_principal)

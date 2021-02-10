@@ -91,12 +91,12 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
             evil_principal=evil_principal,
             resource_arn=self.arn
         )
-        success = True
         if dry_run:
             operation = "DRY_RUN_ADD_MYSELF"
             message = (f"The CloudWatch resource policy named {constants.SID_SIGNATURE} exists. We need to remove it"
                        f" first, then we will add on the new policy.")
-            success = True
+            tmp = self._get_rbp()
+            success = tmp.success
         else:
             operation = "ADD_MYSELF"
             self.undo(evil_principal=evil_principal)
@@ -133,7 +133,7 @@ class CloudwatchResourcePolicy(ResourceType, ABC):
             success = True
         except botocore.exceptions.ClientError as error:
             message = str(error)
-            success = True
+            success = False
         response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=evil_policy, resource_type=self.resource_type,
