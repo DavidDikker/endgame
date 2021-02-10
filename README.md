@@ -2,7 +2,7 @@
 
 Share an AWS account's resources with a rogue AWS Account - or to the entire internet 😈
 
-TLDR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire internet.
+**TLDR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire internet.
 
 ```bash
 # this will ruin your day
