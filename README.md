@@ -9,6 +9,10 @@ Share an AWS account's resources with a rogue AWS Account - or to the entire int
 endgame smash --service all
 # This will show you how your day could have been ruined
 endgame smash --service all --dry-run
+# Atone for your sins
+endgame smash --service all --undo
+# Consider maybe atoning for your sins
+endgame smash --service all --undo --dry-run
 ```
 
 ## Supported Backdoors
