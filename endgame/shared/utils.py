@@ -1,6 +1,5 @@
 import copy
 import logging
-import termcolor
 from colorama import Fore, Back
 from policy_sentry.util.policy_files import get_sid_names_from_policy
 from policy_sentry.util.arns import get_account_from_arn
@@ -92,19 +91,19 @@ def change_policy_principal_from_arn_to_account_id(policy: dict) -> dict:
 
 
 def print_red(string):
-    termcolor.cprint(string, "red")
+    print(f"{Fore.RED}{string}{END}")
 
 
 def print_yellow(string):
-    termcolor.cprint(string, "yellow")
+    print(f"{Fore.YELLOW}{string}{END}")
 
 
 def print_blue(string):
-    termcolor.cprint(string, "blue")
+    print(f"{Fore.BLUE}{string}{END}")
 
 
 def print_green(string):
-    termcolor.cprint(string, "green")
+    print(f"{Fore.GREEN}{string}{END}")
 
 
 def print_grey(string):

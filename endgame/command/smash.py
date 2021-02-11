@@ -80,10 +80,11 @@ END = "\033[0m"
 @click.option(
     "--exclude",
     "-e",
+    "excluded_names",
     type=str,
-    # default="",
+    default="",
     help="A comma-separated list of resource names to exclude from results",
-    envvar="EXCLUDE_RESOURCES",
+    envvar="EXCLUDED_NAMES",
     callback=click_validate_comma_separated_resource_names
 )
 @click.option(
@@ -92,7 +93,7 @@ END = "\033[0m"
     "verbosity",
     count=True,
 )
-def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclude, verbosity):
+def smash(service, evil_principal, profile, region, dry_run, undo, cloak, excluded_names, verbosity):
     """
     Smash your AWS Account to pieces by exposing massive amounts of resources to a rogue principal or to the internet
     """
@@ -128,22 +129,25 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclud
         utils.print_red("CREATE_BACKDOOR:")
 
     for resource in results:
-        name = resource.name
-        region = resource.region
-        translated_service = utils.get_service_translation(provided_service=resource.service)
-        client = None
-        client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
-        response_message = smash_resource(service=translated_service, region=region, name=name,
-                                          current_account_id=current_account_id,
-                                          client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
-        if undo and not dry_run:
-            utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
-        elif undo and dry_run:
-            utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
-        elif not undo and dry_run:
-            utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+        if resource.name not in excluded_names:
+            name = resource.name
+            region = resource.region
+            translated_service = utils.get_service_translation(provided_service=resource.service)
+            # client = None
+            client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
+            response_message = smash_resource(service=translated_service, region=region, name=name,
+                                              current_account_id=current_account_id,
+                                              client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
+            if undo and not dry_run:
+                utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+            elif undo and dry_run:
+                utils.print_remove(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+            elif not undo and dry_run:
+                utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+            else:
+                utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
         else:
-            utils.print_add(response_message.service, response_message.resource_type, response_message.resource_name, principal_type, principal_name, success=response_message.success)
+            logger.debug(f"Excluded: {resource.arn}")
 
 
 def smash_resource(
