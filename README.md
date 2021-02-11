@@ -35,15 +35,15 @@ endgame smash --service all --evil-principal * --undo --dry-run
 | SQS Queues                    | ✅     | ✅                              |
 | SNS Topics                    | ✅     | ❌                              |
 
-## Installation
+## Tutorial
+
+### Installation
 
 ```bash
 python3 -m venv ./venv && source venv/bin/activate
 python3 -m pip install -r requirements.txt
 python3 -m pip install -q ./dist/endgame*.tar.gz
 ```
-
-## Tutorial
 
 ### Setup
 
@@ -61,11 +61,17 @@ export AWS_REGION="us-east-1"
 export AWS_PROFILE="default"
 ```
 
+### Demo Infrastructure
+
 * Create the Terraform demo infrastructure
+
+This program makes modifications to live AWS Infrastructure, which can vary from account to account. We have bootstrapped some of this for you.
 
 > 🚨This will create real AWS infrastructure and will cost you money! 🚨
 
 ```bash
+```bash
+# To create the demo infrastructure
 make terraform-demo
 ```
 
@@ -121,27 +127,36 @@ endgame smash --service all
 endgame smash --service all --undo
 ```
 
+### Destroy Demo Infrastructure
+
+* Now that you are done with the tutorial, don't forget to clean up the demo infrastructure.
+
+```bash
+# Destroy the demo infrastructure
+make terraform-destroy
+```
+
 ## Current Resource Support Statuses
 
 ### Backdoors via Resource-based Policies
 
 | Backdoor   Resource Type      | Support | AWS Access Analyzer Support [1] |
-|-------------------------------|---------|-------------------------    |
-| ACM PCA                       | ✅     | ❌                          |
-| CloudWatch Resource Policies  | ✅     | ❌                          |
-| ECR Repositories              | ✅     | ❌                          |
-| EFS File Systems              | ✅     | ❌                          |
-| ElasticSearch Domains         | ✅     | ❌                          |
-| Glacier Vault Access Policies | ✅     | ❌                          |
-| IAM Roles                     | ✅     | ✅                          |
-| KMS Keys                      | ✅     | ✅                          |
-| Lambda Functions              | ✅     | ✅                          |
-| Lambda Layers                 | ✅     | ✅                          |
-| S3 Buckets                    | ✅     | ✅                          |
-| Secrets Manager Secrets       | ✅     | ✅                          |
-| SES Identity Policies         | ✅     | ❌                          |
-| SQS Queues                    | ✅     | ✅                          |
-| SNS Topics                    | ✅     | ❌                          |
+|-------------------------------|---------|-------------------------        |
+| ACM PCA                       | ✅     | ❌                              |
+| CloudWatch Resource Policies  | ✅     | ❌                              |
+| ECR Repositories              | ✅     | ❌                              |
+| EFS File Systems              | ✅     | ❌                              |
+| ElasticSearch Domains         | ✅     | ❌                              |
+| Glacier Vault Access Policies | ✅     | ❌                              |
+| IAM Roles                     | ✅     | ✅                              |
+| KMS Keys                      | ✅     | ✅                              |
+| Lambda Functions              | ✅     | ✅                              |
+| Lambda Layers                 | ✅     | ✅                              |
+| S3 Buckets                    | ✅     | ✅                              |
+| Secrets Manager Secrets       | ✅     | ✅                              |
+| SES Identity Policies         | ✅     | ❌                              |
+| SQS Queues                    | ✅     | ✅                              |
+| SNS Topics                    | ✅     | ❌                              |
 
 ### Backdoors via Sharing APIs
 
@@ -171,20 +186,6 @@ make test
 
 ```bash
 make security-test
-```
-
-### Demo Infrastructure
-
-This program makes modifications to live AWS Infrastructure, which can vary from account to account. We have bootstrapped some of this for you.
-
-* You can create example Terraform infrastructure with the following:
-
-```bash
-# To create the demo infrastructure
-make terraform-demo
-
-# To destroy the demo infrastructure
-make terraform-destroy
 ```
 
 ### Integration tests
