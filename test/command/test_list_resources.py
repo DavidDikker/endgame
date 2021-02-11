@@ -27,8 +27,8 @@ class ListResourcesClickUnitTests(unittest.TestCase):
             self.mock.start()
             self.mock_sts = mock_sts()
             self.mock_sts.start()
-            self.client = get_boto3_client(profile="default", service="s3", region=region)
-            self.sts_client = get_boto3_client(profile="default", service="sts", region=region)
+            self.client = get_boto3_client(profile=None, service="s3", region=region)
+            self.sts_client = get_boto3_client(profile=None, service="sts", region=region)
             for bucket in bucket_names:
                 self.client.create_bucket(Bucket=bucket)
             # response = self.client.list_buckets()

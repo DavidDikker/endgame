@@ -28,7 +28,7 @@ class SmashClickUnitTests(unittest.TestCase):
             self.mock.start()
             self.mock_sts = mock_sts()
             self.mock_sts.start()
-            self.client = get_boto3_client(profile="default", service="s3", region=region)
+            self.client = get_boto3_client(profile=None, service="s3", region=region)
             for bucket in BUCKET_NAMES:
                 self.client.create_bucket(Bucket=bucket)
             os.environ["EVIL_PRINCIPAL"] = EVIL_PRINCIPAL
@@ -60,7 +60,7 @@ class SmashClickUnitTestsWithExclusions(unittest.TestCase):
             self.mock.start()
             self.mock_sts = mock_sts()
             self.mock_sts.start()
-            self.client = get_boto3_client(profile="default", service="s3", region=region)
+            self.client = get_boto3_client(profile=None, service="s3", region=region)
             for bucket in BUCKET_NAMES:
                 self.client.create_bucket(Bucket=bucket)
             os.environ["EVIL_PRINCIPAL"] = EVIL_PRINCIPAL
