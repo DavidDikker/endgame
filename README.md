@@ -1,6 +1,6 @@
 # endgame
 
-Share an AWS account's resources with a rogue AWS Account - or to the entire internet 😈
+Use a one-liner command to backdoor an AWS account's resources with a rogue AWS Account - or to the entire internet 😈
 
 **TLDR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire internet.
 
