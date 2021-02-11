@@ -10,7 +10,7 @@ from policy_sentry.util.arns import (
 )
 from endgame import set_log_level
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
-from endgame.shared.validate import click_validate_supported_aws_service, click_validate_user_or_principal_arn
+from endgame.shared.validate import click_validate_supported_aws_service, click_validate_user_or_principal_arn, click_validate_comma_separated_resource_names
 from endgame.shared import utils, constants
 from endgame.command.list_resources import get_all_resources_for_all_services, list_resources_by_service
 from endgame.command.expose import expose_service
@@ -78,12 +78,21 @@ END = "\033[0m"
     help="Evade detection by using the default AWS SDK user agent instead of one that indicates usage of this tool.",
 )
 @click.option(
+    "--exclude",
+    "-e",
+    type=str,
+    # default="",
+    help="A comma-separated list of resource names to exclude from results",
+    envvar="EXCLUDE_RESOURCES",
+    callback=click_validate_comma_separated_resource_names
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",
     count=True,
 )
-def smash(service, evil_principal, profile, region, dry_run, undo, cloak, verbosity):
+def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclude, verbosity):
     """
     Smash your AWS Account to pieces by exposing massive amounts of resources to a rogue principal or to the internet
     """

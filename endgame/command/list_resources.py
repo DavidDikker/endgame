@@ -9,7 +9,7 @@ from endgame.exposure_via_resource_policies import glacier_vault, sqs, lambda_la
     cloudwatch_logs, efs, s3, \
     sns, iam, ecr, secrets_manager, ses, elasticsearch, acm_pca
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
-from endgame.shared.validate import click_validate_supported_aws_service
+from endgame.shared.validate import click_validate_supported_aws_service, click_validate_comma_separated_resource_names
 from endgame.shared.list_resources_response import ListResourcesResponse
 from endgame.shared import utils, constants
 
@@ -50,12 +50,22 @@ logger = logging.getLogger(__name__)
     help="Evade detection by using the default AWS SDK user agent instead of one that indicates usage of this tool.",
 )
 @click.option(
+    "--exclude",
+    "-e",
+    "excluded_names",
+    type=str,
+    default="",
+    help="A comma-separated list of resource names to exclude from results",
+    envvar="EXCLUDED_NAMES",
+    callback=click_validate_comma_separated_resource_names
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",
     count=True,
 )
-def list_resources(service, profile, region, cloak, verbosity):
+def list_resources(service, profile, region, cloak, excluded_names, verbosity):
     """
     List AWS resources to expose.
     """
@@ -86,12 +96,17 @@ def list_resources(service, profile, region, cloak, verbosity):
         if provided_service == "all":
             logger.debug("'--service all' selected; listing resources in ARN format to differentiate between services")
             for resource in results:
-                print(resource.arn)
+                if resource.name not in excluded_names:
+                    print(resource.arn)
+                else:
+                    logger.debug(f"Excluded: {resource.name}")
         else:
-            logger.debug(
-                "Listing resources by name")
+            logger.debug("Listing resources by name")
             for resource in results:
-                print(resource.name)
+                if resource.name not in excluded_names:
+                    print(resource.name)
+                else:
+                    logger.debug(f"Excluded: {resource.name}")
 
 
 def get_all_resources_for_all_services(profile: str, region: str, current_account_id: str, cloak: bool = False):
