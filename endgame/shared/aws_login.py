@@ -3,6 +3,7 @@ import logging
 import boto3
 from botocore.config import Config
 from endgame.shared import constants
+logger = logging.getLogger(__name__)
 
 
 def get_boto3_client(profile, service: str, region="us-east-1", cloak: bool = False) -> boto3.Session.client:
@@ -20,6 +21,7 @@ def get_boto3_client(profile, service: str, region="us-east-1", cloak: bool = Fa
         client = session.client(service, config=config, endpoint_url=os.environ.get('LOCALSTACK_ENDPOINT_URL'))
     else:
         client = session.client(service, config=config, endpoint_url=os.environ.get('LOCALSTACK_ENDPOINT_URL'))
+    logger.debug(f"{client.meta.endpoint_url} in {client.meta.region_name}: boto3 client login successful")
     return client
 
 

@@ -36,7 +36,7 @@ setuptools.setup(
         "boto3",
         "click",
         "policy_sentry>=0.11.5",
-        "termcolor"
+        "colorama",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

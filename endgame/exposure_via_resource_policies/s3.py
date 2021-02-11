@@ -29,15 +29,26 @@ class S3Bucket(ResourceType, ABC):
     def _get_rbp(self) -> ResponseGetRbp:
         """Get the resource based policy for this resource and store it"""
         logger.debug("Getting resource policy for %s" % self.arn)
+        policy = constants.get_empty_policy()
         try:
             response = self.client.get_bucket_policy(Bucket=self.name)
             policy = json.loads(response.get("Policy"))
+            message = "200: Successfully obtained bucket policy for %s" % self.arn
             success = True
-        except botocore.exceptions.ClientError:
-            # This occurs when there is no resource policy attached
-            # So let's return a policy that won't break anything but we can add our malicious statement onto
-            policy = constants.get_empty_policy()
+        except botocore.exceptions.ClientError as error:
+            error_code = error.response['Error']['Code']
+            message = f"{error_code}: {error.response['Error']['Message']} for {error.response['Error']['BucketName']}"
+            if error.response['Error']['Code'] == "AccessDenied":
+                success = False
+            elif error.response['Error']['Code'] == "NoSuchBucketPolicy":
+                success = True
+            else:
+                # This occurs when there is no resource policy attached
+                success = True
+        except Exception as error:
+            message = error
             success = False
+        logger.debug(message)
         policy_document = PolicyDocument(
             policy=policy,
             service=self.service,

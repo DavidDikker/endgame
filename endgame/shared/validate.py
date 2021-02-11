@@ -15,6 +15,18 @@ def click_validate_supported_aws_service(ctx, param, value):
         )
 
 
+def click_validate_comma_separated_resource_names(ctx, param, value):
+    if value is not None:
+        try:
+            if value == "":
+                return []
+            else:
+                exclude_resource_names = value.split(",")
+                return exclude_resource_names
+        except ValueError:
+            raise click.BadParameter("Supply the list of resource names to exclude from results in a comma separated string.")
+
+
 def click_validate_user_or_principal_arn(ctx, param, value):
     if validate_user_or_principal_arn(value):
         return value
