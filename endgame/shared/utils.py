@@ -27,7 +27,6 @@ def get_sid_names_with_error_handling(policy):
 def get_service_translation(provided_service: str) -> str:
     """We have to take a user-supplied service (which is named for their understanding) and transform it into the IAM
     service. Example is cloudwatch resource policies being `logs`; `logs` is harder to remember than `cloudwatch`."""
-    actual_service = None
     if provided_service == "cloudwatch":
         actual_service = "logs"
     elif provided_service == "lambda-layer":
@@ -112,14 +111,15 @@ def print_grey(string):
 
 
 def print_remove(service: str, resource_type: str, resource_name: str, principal_type: str, principal_name: str, success: bool):
-    resource_message_string = f"{service.upper()} {resource_type.capitalize()} {resource_name}:"
+    resource_message_string = f"{service.upper()} {resource_type.capitalize()} {resource_name}"
     remove_string = f"Remove {principal_type} {principal_name}"
     if success:
         success_string = f"{Fore.GREEN}SUCCESS{END}"
     else:
         success_string = f"{Fore.RED}FAILED{END}"
     message = f"{resource_message_string:<}: {remove_string}"
-    print_blue(f"{message:<100}{success_string:>20}")
+    print(f"{message:<80}{success_string:>20}")
+    # print_blue(f"{message:<80}{success_string:>20}")
 
 
 def print_add(service: str, resource_type: str, resource_name: str, principal_type: str, principal_name: str, success: bool):
@@ -130,6 +130,6 @@ def print_add(service: str, resource_type: str, resource_name: str, principal_ty
     else:
         success_string = f"{Fore.RED}FAILED{END}"
     message = f"{resource_message_string:<}: {add_string}"
-    print_blue(f"{message:<100}{success_string:>20}")
-
+    # print_blue(f"{message:<80}{success_string:>20}")
+    print(f"{message:<80}{success_string:>20}")
 

@@ -94,6 +94,7 @@ class KmsKeys(ResourceTypes):
         super().__init__(client, current_account_id, region)
         self.service = "kms"
         self.resource_type = "key"
+        self.current_account_id = current_account_id
 
     @property
     def resources(self) -> list[ListResourcesResponse]:
@@ -127,6 +128,8 @@ class KmsKeys(ResourceTypes):
                     arn = resource.get("AliasArn")
                     if alias.startswith("alias/aws") or alias.startswith("aws/"):
                         aws_managed_key_arns.append(arn)
+                        if key_id:
+                            aws_managed_key_arns.append(f"arn:aws:kms:{self.region}:{self.current_account_id}:key/{key_id}")
                         continue
                     else:
                         # keys.append(alias)
