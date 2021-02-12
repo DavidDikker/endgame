@@ -105,6 +105,9 @@ endgame list-resources -s iam
 
 # List S3 buckets, so you can create a backdoor via their Bucket policies 
 endgame list-resources --service s3
+
+# List all resources across services that can be backdoored
+endgame list-resources --service all
 ```
 
 ### Backdoor specific resources
@@ -119,7 +122,7 @@ endgame expose --service iam --name test-resource-exposure --dry-run
 
 > 🚨this is not a drill🚨
 
-```
+```bash
 endgame expose --service iam --name test-resource-exposure
 ```
 
