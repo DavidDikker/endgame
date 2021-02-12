@@ -22,21 +22,21 @@ module "glacier" {
   source = "./glacier-vault"
 }
 
-//module "iam_role" {
-//  source = "./iam-role"
-//}
+module "iam_role" {
+  source = "./iam-role"
+}
 
-//module "lambda_function" {
-//  source = "./lambda-function"
-//}
+module "lambda_function" {
+  source = "./lambda-function"
+}
 
-//module "lambda_layer" {
-//  source = "./lambda-layer"
-//}
+module "lambda_layer" {
+  source = "./lambda-layer"
+}
 
-//module "s3_bucket" {
-//  source = "./s3-bucket"
-//}
+module "s3_bucket" {
+  source = "./s3-bucket"
+}
 
 module "secrets_manager" {
   source = "./secrets-manager"
@@ -46,9 +46,9 @@ module "ses_identity" {
   source      = "./ses-domain-identity"
 }
 
-//module "sns_topic" {
-//  source = "./sns-topic"
-//}
+module "sns_topic" {
+  source = "./sns-topic"
+}
 
 module "sqs_queue" {
   source = "./sqs-queue"
@@ -56,20 +56,20 @@ module "sqs_queue" {
 
 /*
 ElasticSearch Domain: ${module.elasticsearch_domain.name}
-IAM Role: ${module.iam_role.name}
-Lambda Function: ${module.lambda_function.name}
-Lambda Layer: ${module.lambda_layer.name}
-S3 Bucket: ${module.s3_bucket.name}
-SNS Topic: ${module.sns_topic.name}
 */
 
 output "names" {
   value = <<README
 ACM Private Certificate Authority (ACM PCA): ${module.acm_pca.arn}
-SES Identity: ${module.ses_identity.name}
 ECR Registry: ${module.ecr.name}
 EFS File System: ${module.efs.id}
+IAM Role: ${module.iam_role.name}
+Lambda Function: ${module.lambda_function.name}
+Lambda Layer: ${module.lambda_layer.name}
+S3 Bucket: ${module.s3_bucket.name}
 Secrets Manager: ${module.secrets_manager.name}
+SES Identity: ${module.ses_identity.name}
+SNS Topic: ${module.sns_topic.name}
 SQS Queue: ${module.sqs_queue.name}
 README
 }
