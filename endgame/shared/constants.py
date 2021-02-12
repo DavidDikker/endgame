@@ -51,7 +51,7 @@ LAMBDA_ASSUME_ROLE_POLICY = {
 SID_SIGNATURE = "Endgame"
 ALLOW_CURRENT_ACCOUNT_SID_SIGNATURE = "AllowCurrentAccount"
 # This can be used by blue team to identify API calls in CloudTrail executed by this tool.
-USER_AGENT_INDICATOR = "jeffrey_epstein_didnt_kill_himself"
+USER_AGENT_INDICATOR = "HotDogsAreSandwiches"
 
 
 def get_empty_policy():
