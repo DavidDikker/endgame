@@ -97,7 +97,7 @@ class KmsKeys(ResourceTypes):
         self.current_account_id = current_account_id
 
     @property
-    def resources(self) -> list[ListResourcesResponse]:
+    def resources(self) -> [ListResourcesResponse]:
         """Get a list of these resources"""
 
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Paginator.ListKeys

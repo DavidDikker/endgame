@@ -134,5 +134,5 @@ class ResourceTypes(object):
 
     @property
     @abstractmethod
-    def resources(self) -> list[ListResourcesResponse]:
+    def resources(self) -> [ListResourcesResponse]:
         raise NotImplementedError("Must override property 'resources'")

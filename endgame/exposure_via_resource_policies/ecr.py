@@ -83,7 +83,7 @@ class EcrRepositories(ResourceTypes):
         self.resource_type = "repository"
 
     @property
-    def resources(self) -> list[ListResourcesResponse]:
+    def resources(self) -> [ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 

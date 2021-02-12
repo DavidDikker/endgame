@@ -122,7 +122,7 @@ def get_all_resources_for_all_services(profile: str, region: str, current_accoun
 
 
 def get_all_resources(translated_service: str, profile: str, provided_service: str, region: str,
-                      current_account_id: str, cloak: bool = False) -> list[ListResourcesResponse]:
+                      current_account_id: str, cloak: bool = False) -> [ListResourcesResponse]:
     """Get resource objects for every resource under an AWS service"""
     results = []
     client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)

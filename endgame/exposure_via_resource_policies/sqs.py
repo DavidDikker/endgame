@@ -164,7 +164,7 @@ class SqsQueues(ResourceTypes):
         self.resource_type = "queue"
 
     @property
-    def resources(self) -> list[ListResourcesResponse]:
+    def resources(self) -> [ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 
