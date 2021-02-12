@@ -1,40 +1,40 @@
 # Moto support status per service
 
 * ACM PCA: ❌ Not supported by Moto
-  * `get_policy`: ❌ Not supported
-  * `put_policy`: ❌ Not supported
   * `delete_policy`: ❌ Not supported
+  * `get_policy`: ❌ Not supported
   * `list_certificate_authorities`: ❌ Not supported
+  * `put_policy`: ❌ Not supported
 * CloudWatch Logs: ❌ Resource policy not supported by Moto
   * `describe_resource_policies`: ❌ Not supported
-  * `put_resource_policy`: ❌ Not supported
   * `delete_resource_policy`: ❌ Not supported
+  * `put_resource_policy`: ❌ Not supported
 * ECR
   * `describe_repositories`: ✅ Supported
+  * `delete_repository_policy`: ❌ Not supported
   * `get_repository_policy`: ❌ Not supported ⁉️
   * `set_repository_policy`: ❌ Not supported
-  * `delete_repository_policy`: ❌ Not supported
 * EFS: ❌ Not supported by Moto
   * `describe_file_system_policy`: ❌ Not supported
-  * `put_file_system_policy`: ❌ Not supported
   * `describe_file_systems`: ❌ Not supported
+  * `put_file_system_policy`: ❌ Not supported
 * ElasticSearch: ❌ Not supported by Moto
   * `describe_elasticsearch_domain_config`: Not supported
-  * `update_elasticsearch_domain_config`: Not supported
   * `list_domain_names`: Not supported
+  * `update_elasticsearch_domain_config`: Not supported
 * Glacier Vault
   * `get_vault_access_policy`: ❌ Not supported
-  * `set_vault_access_policy`: ❌ Not supported
   * `list_vaults`: ❌ Not supported ⁉️
+  * `set_vault_access_policy`: ❌ Not supported
 * IAM
   * `get_role`: ✅ Supported
-  * `update_assume_role_policy`: ✅ Supported
   * `list_roles`: ✅ Supported
+  * `update_assume_role_policy`: ✅ Supported
 * KMS
-  * `put_key_policy`: ✅ Supported
   * `get_key_policy`: ✅ Supported
   * `list_keys`: ✅ Supported
   * `list_aliases`: ❌ Not supported ⁉️
+  * `put_key_policy`: ✅ Supported
 * Lambda Function
   * `list_functions`: ✅ Supported
   * `get_function_policy`: ✅ Supported
@@ -50,15 +50,15 @@
   * `put_bucket_policy`: ✅ Supported
   * `list_buckets`: ✅ Supported
 * Secrets Manager
-  * `list_secrets`: ✅ Supported
-  * `get_resource_policy`: ✅ Supported
-  * `put_resource_policy`: ❌ Not supported
   * `delete_resource_policy`: ❌ Not supported
+  * `get_resource_policy`: ✅ Supported
+  * `list_secrets`: ✅ Supported
+  * `put_resource_policy`: ❌ Not supported
 * SES
-  * `list_identities`: ✅ Supported
-  * `get_identity_policies`: ❌ Not supported
-  * `list_identity_policies`: ❌ Not supported
   * `delete_identity_policy`: ❌ Not supported
+  * `get_identity_policies`: ❌ Not supported
+  * `list_identities`: ✅ Supported
+  * `list_identity_policies`: ❌ Not supported
   * `put_identity_policy`: ❌ Not supported
 * SNS
   * `add_permission`: ✅ Supported
@@ -66,10 +66,10 @@
   * `remove_permission`: ✅ Supported
   * `list_topics`: ✅ Supported
 * SQS
-  * `list_queues`: ✅ Supported
+  * `add_permission`: ✅ Supported
   * `get_queue_url`: ✅ Supported
   * `get_queue_attributes`: ✅ Supported
-  * `add_permission`: ✅ Supported
+  * `list_queues`: ✅ Supported
   * `remove_permission`: ✅ Supported
 
 ## Unit test structure per service
