@@ -55,10 +55,33 @@ endgame expose --service s3 --name computers-were-a-mistake
 
 ### Installation
 
+* pip3
+
 ```bash
-python3 -m venv ./venv && source venv/bin/activate
-python3 -m pip install -r requirements.txt
-python3 -m pip install -q ./dist/endgame*.tar.gz
+pip3 install --user endgame
+```
+
+* Homebrew (this will not work until the repository is public)
+
+```bash
+brew tap salesforce/endgame https://github.com/salesforce/endgame
+brew install endgame
+```
+
+Now you should be able to execute `endgame` from command line by running `endgame --help`.
+
+#### Shell Completion
+
+* To enable Bash completion, put this in your `~/.bashrc`:
+
+```bash
+eval "$(_CLOUDSPLAINING_COMPLETE=source cloudsplaining)"
+```
+
+* To enable ZSH completion, put this in your `~/.zshrc`:
+
+```bash
+eval "$(_CLOUDSPLAINING_COMPLETE=source_zsh cloudsplaining)"
 ```
 
 ### Setup
