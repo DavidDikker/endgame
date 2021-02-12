@@ -1,0 +1,88 @@
+name: Publish
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8', '3.9']
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          make setup-dev
+
+      - name: Run pytest (unit tests) and bandit (security test)
+        run: |
+          make test
+
+      - name: Install the package to make sure nothing is randomly broken
+        run: |
+          make install
+
+  publish-package:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      - name: create python package
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git fetch --tags
+          git pull origin main
+          pip install setuptools wheel twine
+          python -m setup sdist bdist_wheel
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_PASSWORD }}
+
+
+  update-brew:
+    needs: publish-package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: publish brew
+        run: |
+          sleep 5m
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          pip install homebrew-pypi-poet
+          pip install endgame -U
+          git fetch origin
+          git checkout --track origin/main
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          git pull origin $latest_tag
+          mkdir -p "HomebrewFormula" && touch "HomebrewFormula/endgame.rb"
+          poet -f endgame > HomebrewFormula/endgame.rb
+          git add .
+          git commit -m "update brew formula" endgame/bin/cli.py HomebrewFormula/endgame.rb || echo "No brew changes to commit"
+          git push -u origin main

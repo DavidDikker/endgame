@@ -35,7 +35,7 @@ class PolicyDocument:
     def __repr__(self):
         return json.dumps(self.json)
 
-    def _statements(self, statement_structure) -> list[StatementDetail]:
+    def _statements(self, statement_structure) -> [StatementDetail]:
         # Statement can be a list or a string, but we prefer strings for uniformity
         if not isinstance(statement_structure, list):
             statement_structure = [statement_structure]  # pragma: no cover

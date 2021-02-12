@@ -84,7 +84,7 @@ class S3Buckets(ResourceTypes):
         self.resource_type = "bucket"
 
     @property
-    def resources(self) -> list[ListResourcesResponse]:
+    def resources(self) -> [ListResourcesResponse]:
         """Get a list of these resources"""
         response = self.client.list_buckets()
         resources = []

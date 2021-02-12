@@ -81,7 +81,7 @@ class ElasticSearchDomains(ResourceTypes):
         self.resource_type = "domain"
 
     @property
-    def resources(self) -> list[ListResourcesResponse]:
+    def resources(self) -> [ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 

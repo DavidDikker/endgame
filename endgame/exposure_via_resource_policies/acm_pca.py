@@ -180,7 +180,7 @@ class AcmPrivateCertificateAuthorities(ResourceTypes):
         self.resource_type = "certificate-authority"
 
     @property
-    def resources(self) -> list[ListResourcesResponse]:
+    def resources(self) -> [ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 

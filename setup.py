@@ -46,5 +46,5 @@ setuptools.setup(
     entry_points={"console_scripts": "endgame=endgame.bin.cli:main"},
     zip_safe=True,
     keywords="aws iam security",
-    python_requires=">=3.9",
+    python_requires=">=3.7",
 )

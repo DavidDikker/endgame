@@ -132,7 +132,7 @@ class LambdaFunctions(ResourceTypes):
         self.resource_type = "function"
 
     @property
-    def resources(self) -> list[ListResourcesResponse]:
+    def resources(self) -> [ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
 
