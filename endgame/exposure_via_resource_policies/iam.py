@@ -97,7 +97,8 @@ class IAMRoles(ResourceTypes):
                 arn = role.get("Arn")
                 name = role.get("RoleName")
                 # Special case: Ignore Service Linked Roles
-                if path == "/service-role/" or path.startswith("/aws-service-role/"):
+                if path.startswith("/aws-service-role/"):
+                # if path == "/service-role/" or path.startswith("/aws-service-role/"):
                     continue
                 list_resources_response = ListResourcesResponse(
                     service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,

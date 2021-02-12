@@ -37,7 +37,7 @@ class S3Bucket(ResourceType, ABC):
             success = True
         except botocore.exceptions.ClientError as error:
             error_code = error.response['Error']['Code']
-            message = f"{error_code}: {error.response['Error']['Message']} for {error.response['Error']['BucketName']}"
+            message = f"{error_code}: {error.response.get('Error').get('Message')} for {error.response.get('Error').get('BucketName')}"
             if error.response['Error']['Code'] == "AccessDenied":
                 success = False
             elif error.response['Error']['Code'] == "NoSuchBucketPolicy":

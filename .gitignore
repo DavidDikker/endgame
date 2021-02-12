@@ -67,3 +67,4 @@ packer_cache/
 
 #### Repository specific
 .notes/*
+**/private.tf
