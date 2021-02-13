@@ -74,7 +74,7 @@ class EbsSnapshot(ResourceSharingApi, ABC):
                         OperationType="add",
                     )
             if accounts_to_remove:
-                logger.debug(f"Sharing the snapshot {self.name} with the accounts {', '.join(accounts_to_add)}")
+                logger.debug(f"Removing access to the snapshot {self.name} from the accounts {', '.join(accounts_to_add)}")
                 if "all" in accounts_to_remove:
                     self.client.modify_snapshot_attribute(
                         Attribute="createVolumePermission",
