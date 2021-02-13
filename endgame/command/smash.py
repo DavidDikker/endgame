@@ -41,7 +41,7 @@ END = "\033[0m"
 )
 @click.option(
     "--profile",
-    "--p",
+    "-p",
     type=str,
     required=False,
     help="Specify the AWS IAM profile.",
