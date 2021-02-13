@@ -89,6 +89,15 @@ TODO
 
 Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure activities. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 
+## Basic Detection
+The following CloudWatch Log Insights query will include exposure actions taken by endgame:
+```
+fields eventTime, eventSource, eventName, userIdentity.arn, userAgent 
+| filter eventSource='ses.amazonaws.com' AND (eventName='PutIdentityPolicy' or eventName='DeleteIdentityPolicy')
+```
+
+This query assumes that your CloudTrail logs are being sent to CloudWatch and that you have selected the correct log group.
+
 ## References
 
 * [add-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sns/add-permission.html)
