@@ -154,8 +154,6 @@ class RdsSnapshots(ResourceTypes):
         """Get a list of these resources"""
         resources = []
         paginator = self.client.get_paginator("describe_db_snapshots")
-        # Get the most recent one. Return both automated and manual ones.
-        # When you want to "undo", you will have to get the shared and public ones.
         page_iterator = paginator.paginate()
         for page in page_iterator:
             these_resources = page["DBSnapshots"]

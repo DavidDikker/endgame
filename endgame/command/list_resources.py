@@ -6,9 +6,8 @@ import click
 import boto3
 from endgame import set_log_level
 from endgame.exposure_via_resource_policies import glacier_vault, sqs, lambda_layer, lambda_function, kms, \
-    cloudwatch_logs, efs, s3, \
-    sns, iam, ecr, secrets_manager, ses, elasticsearch, acm_pca
-from endgame.exposure_via_sharing_apis import rds_snapshots
+    cloudwatch_logs, efs, s3,  sns, iam, ecr, secrets_manager, ses, elasticsearch, acm_pca
+from endgame.exposure_via_sharing_apis import rds_snapshots, ebs_snapshots
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared.validate import click_validate_supported_aws_service, click_validate_comma_separated_resource_names
 from endgame.shared.list_resources_response import ListResourcesResponse
@@ -84,7 +83,8 @@ def list_resources(service, profile, region, cloak, excluded_names, verbosity):
     if provided_service == "all":
         results = get_all_resources_for_all_services(profile=profile, region=region, current_account_id=current_account_id, cloak=cloak)
     else:
-        client = get_boto3_client(profile=profile, service=service, region=region, cloak=cloak)
+        translated_service = utils.get_service_translation(provided_service=provided_service)
+        client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
         result = list_resources_by_service(provided_service=service, region=region,
                                            current_account_id=current_account_id, client=client)
         results.extend(result.resources)
@@ -179,4 +179,6 @@ def list_resources_by_service(
                                                           region=region)
     elif provided_service == "rds":
         resources = rds_snapshots.RdsSnapshots(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "ebs":
+        resources = ebs_snapshots.EbsSnapshots(client=client, current_account_id=current_account_id, region=region)
     return resources

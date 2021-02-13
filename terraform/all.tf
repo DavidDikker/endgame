@@ -6,6 +6,9 @@
 //  source = "./cloudwatch-resource-policy"
 //}
 //
+module "ebs" {
+  source = "./ebs-snapshot"
+}
 //module "ecr" {
 //  source = "./ecr-repository"
 //}
@@ -34,6 +37,10 @@
 //  source = "./lambda-layer"
 //}
 //
+//module "rds_snapshot" {
+//  source = "./rds-snapshot"
+//}
+//
 //module "s3_bucket" {
 //  source = "./s3-bucket"
 //}
@@ -55,11 +62,8 @@
 //  source = "./sqs-queue"
 //}
 
-module "rds_snapshot" {
-  source = "./rds-snapshot"
-}
 output "names" {
-  value = module.rds_snapshot.snapshot_identifier
+  value = module.ebs.id
 }
 
 /*
@@ -70,10 +74,12 @@ ElasticSearch Domain: ${module.elasticsearch_domain.name}
 //  value = <<README
 //ACM Private Certificate Authority (ACM PCA): ${module.acm_pca.arn}
 //ECR Registry: ${module.ecr.name}
+//EBS Volume: ${module.ebs.id}
 //EFS File System: ${module.efs.id}
 //IAM Role: ${module.iam_role.name}
 //Lambda Function: ${module.lambda_function.name}
 //Lambda Layer: ${module.lambda_layer.name}
+//RDS Snapshot: ${module.rds_snapshot.snapshot_identifier}
 //S3 Bucket: ${module.s3_bucket.name}
 //Secrets Manager: ${module.secrets_manager.name}
 //SES Identity: ${module.ses_identity.name}
