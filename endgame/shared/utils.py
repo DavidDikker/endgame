@@ -35,6 +35,8 @@ def get_service_translation(provided_service: str) -> str:
         actual_service = "es"
     elif provided_service == "elasticfilesystem":
         actual_service = "efs"
+    elif provided_service == "ebs":
+        actual_service = "ec2"
     else:
         actual_service = provided_service
     return actual_service

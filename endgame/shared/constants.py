@@ -2,6 +2,7 @@ import copy
 SUPPORTED_AWS_SERVICES = [
   "all",
   "acm-pca",
+  "ebs",
   "ecr",
   "efs",
   "elasticsearch",

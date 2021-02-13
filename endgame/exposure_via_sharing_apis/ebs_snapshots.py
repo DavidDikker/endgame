@@ -11,9 +11,9 @@ from endgame.shared.list_resources_response import ListResourcesResponse
 logger = logging.getLogger(__name__)
 
 
-class RdsSnapshot(ResourceSharingApi, ABC):
+class EbsSnapshot(ResourceSharingApi, ABC):
     def __init__(self, name: str, region: str, client: boto3.Session.client, current_account_id: str):
-        self.service = "rds"
+        self.service = "ebs"
         self.resource_type = "snapshot"
         self.region = region
         self.current_account_id = current_account_id
@@ -22,22 +22,27 @@ class RdsSnapshot(ResourceSharingApi, ABC):
 
     @property
     def arn(self) -> str:
-        return f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{self.name}"
+        return f"arn:aws:ec2:{self.region}:{self.current_account_id}:{self.resource_type}/{self.name}"
 
     def _get_shared_with_accounts(self) -> ResponseGetSharingApi:
         logger.debug("Getting snapshot status policy for %s" % self.arn)
         shared_with_accounts = []
         try:
-            response = self.client.describe_db_snapshot_attributes(
-                DBSnapshotIdentifier=self.name
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_snapshot_attribute
+            response = self.client.describe_snapshot_attribute(
+                Attribute="createVolumePermission",
+                SnapshotId=self.name,
             )
-            attributes = response.get("DBSnapshotAttributesResult").get("DBSnapshotAttributes")
+            attributes = response.get("CreateVolumePermissions")
             for attribute in attributes:
-                if attribute.get("AttributeName") == "restore":
-                    shared_with_accounts.extend(attribute.get("AttributeValues"))
-                    break
+                if attribute.get("Group"):
+                    if attribute.get("Group") == "all":
+                        shared_with_accounts.append("all")
+                if attribute.get("UserId"):
+                    shared_with_accounts.append(attribute.get("UserId"))
             success = True
-        except botocore.exceptions.ClientError:
+        except botocore.exceptions.ClientError as error:
+            logger.debug(error)
             success = False
         response_message = ResponseGetSharingApi(shared_with_accounts=shared_with_accounts, success=success,
                                                  evil_principal="", victim_resource_arn=self.arn,
@@ -50,22 +55,41 @@ class RdsSnapshot(ResourceSharingApi, ABC):
 
     def share(self, accounts_to_add: list, accounts_to_remove: list) -> ResponseGetSharingApi:
         shared_with_accounts = []
-        if accounts_to_add:
-            logger.debug(f"Sharing the snapshot {self.name} with the accounts {', '.join(accounts_to_add)}")
-        if accounts_to_remove:
-            logger.debug(f"Removing access to snapshot {self.name} for the accounts {', '.join(accounts_to_add)}")
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.modify_snapshot_attribute
         try:
-            snapshot_attributes_response = self.client.modify_db_snapshot_attribute(
-                DBSnapshotIdentifier=self.name,
-                AttributeName='restore',
-                ValuesToAdd=accounts_to_add,
-                ValuesToRemove=accounts_to_remove
-            )
-            attributes = snapshot_attributes_response.get("DBSnapshotAttributesResult").get("DBSnapshotAttributes")
-            for attribute in attributes:
-                if attribute.get("AttributeName") == "restore":
-                    shared_with_accounts.extend(attribute.get("AttributeValues"))
-                    break
+            if accounts_to_add:
+                logger.debug(f"Sharing the snapshot {self.name} with the accounts {', '.join(accounts_to_add)}")
+                if "all" in accounts_to_add:
+                    self.client.modify_snapshot_attribute(
+                        Attribute="createVolumePermission",
+                        SnapshotId=self.name,
+                        GroupNames=["all"],
+                        OperationType="add",
+                    )
+                else:
+                    self.client.modify_snapshot_attribute(
+                        Attribute="createVolumePermission",
+                        SnapshotId=self.name,
+                        UserIds=accounts_to_add,
+                        OperationType="add",
+                    )
+            if accounts_to_remove:
+                logger.debug(f"Sharing the snapshot {self.name} with the accounts {', '.join(accounts_to_add)}")
+                if "all" in accounts_to_remove:
+                    self.client.modify_snapshot_attribute(
+                        Attribute="createVolumePermission",
+                        SnapshotId=self.name,
+                        GroupNames=["all"],
+                        OperationType="remove",
+                    )
+                else:
+                    self.client.modify_snapshot_attribute(
+                        Attribute="createVolumePermission",
+                        SnapshotId=self.name,
+                        UserIds=accounts_to_remove,
+                        OperationType="remove",
+                    )
+            shared_with_accounts = self._get_shared_with_accounts().shared_with_accounts
             success = True
         except botocore.exceptions.ClientError:
             success = False
@@ -143,28 +167,34 @@ class RdsSnapshot(ResourceSharingApi, ABC):
         return evil_account_id
 
 
-class RdsSnapshots(ResourceTypes):
+class EbsSnapshots(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
-        self.service = "rds"
+        self.service = "ebs"
         self.resource_type = "snapshot"
 
     @property
     def resources(self) -> [ListResourcesResponse]:
         """Get a list of these resources"""
         resources = []
-        paginator = self.client.get_paginator("describe_db_snapshots")
-        page_iterator = paginator.paginate()
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Paginator.DescribeSnapshots
+        paginator = self.client.get_paginator("describe_snapshots")
+        # Apply a filter, otherwise we get public EBS snapshots too, from randos on the internet.
+        page_iterator = paginator.paginate(Filters=[
+            {
+                "Name": "owner-id",
+                "Values": [self.current_account_id]
+            }
+        ])
         for page in page_iterator:
-            these_resources = page["DBSnapshots"]
+            these_resources = page["Snapshots"]
             for resource in these_resources:
-                snapshot_identifier = resource.get("DBSnapshotIdentifier")
-                instance_identifier = resource.get("DBInstanceIdentifier")
-                arn = resource.get("DBSnapshotArn")
-                snapshot_name = get_resource_path_from_arn(arn)
-                # arn:${Partition}:rds:${Region}:${Account}:snapshot:${SnapshotName}
+                snapshot_id = resource.get("SnapshotId")
+                kms_key_id = resource.get("KmsKeyId")
+                volume_id = resource.get("VolumeId")
+                arn = f"arn:aws:ec2:{self.region}:{self.current_account_id}:snapshot/{snapshot_id}"
                 list_resources_response = ListResourcesResponse(
                     service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
-                    resource_type=self.resource_type, name=snapshot_name)
+                    resource_type=self.resource_type, name=snapshot_id)
                 resources.append(list_resources_response)
         return resources
