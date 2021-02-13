@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Ec2Image(ResourceSharingApi, ABC):
     def __init__(self, name: str, region: str, client: boto3.Session.client, current_account_id: str):
-        self.service = "ec2"
+        self.service = "ec2-ami"
         self.resource_type = "image"
         self.region = region
         self.current_account_id = current_account_id
@@ -168,7 +168,7 @@ class Ec2Image(ResourceSharingApi, ABC):
 class Ec2Images(ResourceTypes):
     def __init__(self, client: boto3.Session.client, current_account_id: str, region: str):
         super().__init__(client, current_account_id, region)
-        self.service = "ec2"
+        self.service = "ec2-ami"
         self.resource_type = "image"
 
     @property
@@ -181,7 +181,7 @@ class Ec2Images(ResourceTypes):
             image_id = resource.get("ImageId")
             name = resource.get("Name")
             volume_id = resource.get("VolumeId")
-            arn = f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{image_id}"
+            arn = f"arn:aws:ec2:{self.region}:{self.current_account_id}:{self.resource_type}/{image_id}"
             list_resources_response = ListResourcesResponse(
                 service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
                 resource_type=self.resource_type, name=image_id)
