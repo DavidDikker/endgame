@@ -7,7 +7,7 @@ import boto3
 from endgame import set_log_level
 from endgame.exposure_via_resource_policies import glacier_vault, sqs, lambda_layer, lambda_function, kms, \
     cloudwatch_logs, efs, s3,  sns, iam, ecr, secrets_manager, ses, elasticsearch, acm_pca
-from endgame.exposure_via_sharing_apis import rds_snapshots, ebs_snapshots
+from endgame.exposure_via_sharing_apis import rds_snapshots, ebs_snapshots, ec2_amis
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared.validate import click_validate_supported_aws_service, click_validate_comma_separated_resource_names
 from endgame.shared.list_resources_response import ListResourcesResponse
@@ -181,4 +181,6 @@ def list_resources_by_service(
         resources = rds_snapshots.RdsSnapshots(client=client, current_account_id=current_account_id, region=region)
     elif provided_service == "ebs":
         resources = ebs_snapshots.EbsSnapshots(client=client, current_account_id=current_account_id, region=region)
+    elif provided_service == "ec2-ami":
+        resources = ec2_amis.Ec2Images(client=client, current_account_id=current_account_id, region=region)
     return resources
