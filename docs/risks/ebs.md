@@ -23,7 +23,7 @@ aws ec2 modify-snapshot-attribute \
     --group-names all
 ```
 
-* To view the contents of the exposed resource policy, run the following:
+* To verify that the snapshot has been shared with the public, run the following from the victim account:
 
 ```bash
 export SNAPSHOT_ID=snap-1234567890abcdef0

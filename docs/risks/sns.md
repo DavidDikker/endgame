@@ -10,7 +10,37 @@ export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
 endgame expose --service sns --name test-resource-exposure
 ```
 
+* To verify that the SNS topic has been shared with the evil principal, run the following from the victim account:
+
+```bash
+export VICTIM_RESOURCE=arn:aws:sns:us-east-1:111122223333:test-resource-exposure
+
+aws sns get-topic-attributes \
+    --topic-arn $VICTIM_RESOURCE
+```
+
+* Observe that the contents match the example shown below.
+
 ## Example
+
+The output will have the following structure:
+
+```json
+{
+    "Attributes": {
+        "SubscriptionsConfirmed": "1",
+        "DisplayName": "my-topic",
+        "SubscriptionsDeleted": "0",
+        "EffectiveDeliveryPolicy": "",
+        "Owner": "111122223333",
+        "Policy": "SeeBelow",
+        "TopicArn": "arn:aws:sns:us-east-1:111122223333:test-resource-exposure",
+        "SubscriptionsPending": "0"
+    }
+}
+```
+
+The prettified version of the `Policy` key is below. Observe how the content of the policy grants the evil principal's account ID (`999988887777`) maximum access to the SNS topic.
 
 ```json
 {
@@ -41,6 +71,10 @@ endgame expose --service sns --name test-resource-exposure
 ```
 
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 
