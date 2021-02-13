@@ -123,8 +123,12 @@ def expose(name, evil_principal, profile, service, region, dry_run, undo, cloak,
 
     # Get the current account ID
     current_account_id = get_current_account_id(sts_client=sts_client)
-    principal_type = parse_arn_for_resource_type(evil_principal)
-    principal_name = get_resource_path_from_arn(evil_principal)
+    if evil_principal.strip('"').strip("'") == "*":
+        principal_type = "internet-wide access"
+        principal_name = "*"
+    else:
+        principal_type = parse_arn_for_resource_type(evil_principal)
+        principal_name = get_resource_path_from_arn(evil_principal)
 
     response_message = expose_service(provided_service=provided_service, region=region, name=name, current_account_id=current_account_id, client=client, dry_run=dry_run, evil_principal=evil_principal, undo=undo)
 

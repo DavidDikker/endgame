@@ -45,6 +45,7 @@ endgame expose --service s3 --name computers-were-a-mistake
 | KMS Keys                      | ✅     | ✅                               |
 | Lambda Functions              | ✅     | ✅                               |
 | Lambda Layers                 | ✅     | ✅                               |
+| RDS Snapshots                 | ✅     | ❌                               |
 | S3 Buckets                    | ✅     | ✅                               |
 | Secrets Manager Secrets       | ✅     | ✅                               |
 | SES Identity Policies         | ✅     | ❌                               |
@@ -206,7 +207,7 @@ make terraform-destroy
 |-------------------------------|----------------|
 | EC2 AMIs                      | ❌             |
 | EBS Snapshots                 | ❌             |
-| RDS Snapshots                 | ❌             |
+| RDS Snapshots                 | ✅             |
 | RDS DB Cluster Snapshots      | ❌             |
 
 ## IAM Permissions
