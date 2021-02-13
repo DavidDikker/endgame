@@ -47,3 +47,7 @@ nav:
   - "<b>Contributing</b>":
     - Contributing: 'contributing/contributing.md'
     - Testing: 'contributing/testing.md'
+
+  - "<b>Appendices</b>":
+    - Terraform Demo Infrastructure: 'appendices/terraform-demo-infrastructure.md'
+    - ACM PCA Activation: 'appendices/acm-pca-activation.md'

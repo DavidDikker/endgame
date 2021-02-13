@@ -1,6 +1,6 @@
-module "acm_pca" {
-  source = "./acm-pca"
-}
+//module "acm_pca" {
+//  source = "./acm-pca"
+//}
 
 module "cloudwatch_resource_policy" {
   source = "./cloudwatch-resource-policy"
@@ -51,9 +51,9 @@ module "s3_bucket" {
 }
 
 
-module "secrets_manager" {
-  source = "./secrets-manager"
-}
+//module "secrets_manager" {
+//  source = "./secrets-manager"
+//}
 
 module "ses_identity" {
   source      = "./ses-domain-identity"
@@ -75,11 +75,12 @@ module "sqs_queue" {
 
 /*
 ElasticSearch Domain: ${module.elasticsearch_domain.name}
+Secrets Manager: ${module.secrets_manager.name}
+ACM Private Certificate Authority (ACM PCA): ${module.acm_pca.arn}
 */
 
 output "names" {
   value = <<README
-ACM Private Certificate Authority (ACM PCA): ${module.acm_pca.arn}
 EBS Volume: ${module.ebs.id}
 ECR Registry: ${module.ecr.name}
 EC2 AMI: ${module.ec2_ami.ami_id}
@@ -89,7 +90,6 @@ Lambda Function: ${module.lambda_function.name}
 Lambda Layer: ${module.lambda_layer.name}
 RDS Snapshot: ${module.rds_snapshot.snapshot_identifier}
 S3 Bucket: ${module.s3_bucket.name}
-Secrets Manager: ${module.secrets_manager.name}
 SES Identity: ${module.ses_identity.name}
 SNS Topic: ${module.sns_topic.name}
 SQS Queue: ${module.sqs_queue.name}

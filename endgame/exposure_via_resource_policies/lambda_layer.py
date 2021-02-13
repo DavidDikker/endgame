@@ -100,7 +100,7 @@ class LambdaLayer(ResourceType, ABC):
         except botocore.exceptions.ClientError as error:
             message = str(error)
             success = False
-        policy_document = self._get_rbp()
+        policy_document = self._get_rbp().policy_document
         response_message = ResponseMessage(message=message, operation="set_rbp", success=success, evil_principal="",
                                            victim_resource_arn=self.arn, original_policy=self.original_policy,
                                            updated_policy=policy_document.json, resource_type=self.resource_type,

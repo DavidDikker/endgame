@@ -6,8 +6,6 @@
 
 ## Example
 
-## Vulnerable config
-
 ```json
 {
   "Version": "2012-10-17",

