@@ -20,6 +20,8 @@ Actions:
 ### EBS snapshot
 Actions:
 - ec2 [modify-snapshot-attribute](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/modify-snapshot-attribute.html)
+  - [moto modify_snapshot_attribute](https://github.com/spulec/moto/blob/master/moto/ec2/responses/elastic_block_store.py#L129)
+  - [moto describe_snapshot_attribute](https://github.com/spulec/moto/blob/master/moto/ec2/responses/elastic_block_store.py#L122)
 
 ### RDS snapshot
 Actions:

@@ -11,6 +11,7 @@ SUPPORTED_AWS_SERVICES = [
   "lambda",
   "lambda-layer",
   "cloudwatch",
+  "rds",
   "s3",
   "secretsmanager",
   "ses",
