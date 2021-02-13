@@ -14,7 +14,7 @@
   "Id": "__default_policy_ID",
   "Statement": [
     {
-      "Sid": "RbpExposer",
+      "Sid": "Endgame",
       "Effect": "Allow",
       "Principal": {
         "AWS": "999988887777"

