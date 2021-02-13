@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 )
 @click.option(
     "--profile",
-    "--p",
+    "-p",
     type=str,
     required=False,
     help="Specify the AWS IAM profile.",

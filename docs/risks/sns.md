@@ -2,11 +2,7 @@
 
 ## Steps to Reproduce
 
-* Using `endgame`:
-
-* Using AWS CLI:
-
-## Example: Exposed Resource
+## Example
 
 ```json
 {
@@ -14,7 +10,7 @@
   "Id": "__default_policy_ID",
   "Statement": [
     {
-      "Sid": "RbpExposer",
+      "Sid": "Endgame",
       "Effect": "Allow",
       "Principal": {
         "AWS": "999988887777"
@@ -36,7 +32,20 @@
 }
 ```
 
+## Exploitation
+
 ## Remediation
+
+* **Trusted Accounts Only**: Ensure that SNS Topics are only shared with trusted accounts, and that the trusted accounts truly need access to the SNS Topic.
+* **Ensure access is necessary**: For any trusted accounts that do have access, ensure that the access is absolutely necessary.
+* **AWS Access Analyzer**: Leverage AWS Access Analyzer to report on external access to SNS Topics. See [the AWS Access Analyzer documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) for more details.
+* **Restrict access to IAM permissions that could lead to exposure of your SNS Topics**: Tightly control access to the following IAM actions:
+  - [sns:AddPermission](https://docs.aws.amazon.com/sns/latest/api/API_AddPermission.html): _Adds a statement to a topic's access control policy, granting access for the specified AWS accounts to the specified actions._
+  - [sns:RemovePermission](https://docs.aws.amazon.com/sns/latest/api/API_RemovePermission.html): _Removes a statement from a topic's access control policy._
+  - [sns:GetTopicAttributes](https://docs.aws.amazon.com/sns/latest/api/API_GetTopicAttributes.html): _Returns all of the properties of a topic. This includes the resource-based policy document for the SNS Topic, which lists information about who is authorized to access the SNS Topic_
+  - [sns:ListTopics](https://docs.aws.amazon.com/sns/latest/api/API_ListTopics.html): _Returns a list of the requester's topics._
+
+Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure activities. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 
 ## References
 
