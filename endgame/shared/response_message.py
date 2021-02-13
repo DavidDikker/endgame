@@ -16,7 +16,6 @@ class ResponseMessage:
                  original_policy: dict, updated_policy: dict, resource_type: str, resource_name: str, service: str):
         self.message = message
         self.operation = operation
-        # Operation:  ADD_MYSELF, DRY_RUN_ADD_MYSELF, UNDO, DRY_RUN_UNDO, LIST
         self.success = success
         self.evil_principal = evil_principal
         self.victim_resource_arn = victim_resource_arn

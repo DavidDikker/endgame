@@ -5,8 +5,6 @@ import copy
 import boto3
 import botocore
 from botocore.exceptions import ClientError
-
-from endgame.shared.policy_document import PolicyDocument
 from endgame.shared.response_message import ResponseMessage
 from endgame.shared.list_resources_response import ListResourcesResponse
 from endgame.shared.response_message import ResponseGetRbp
@@ -62,7 +60,6 @@ class ResourceType(object):
     def set_rbp(self, evil_policy: dict) -> ResponseMessage:
         raise NotImplementedError("Must override set_rbp")
 
-    # def add_myself(self, evil_principal: str, dry_run: bool = False) -> dict:
     def add_myself(self, evil_principal: str, dry_run: bool = False) -> ResponseMessage:
         """Add your rogue principal to the AWS resource"""
         logger.debug(f"Adding {evil_principal} to {self.arn}")
@@ -81,8 +78,6 @@ class ResourceType(object):
             operation = "DRY_RUN_ADD_MYSELF"
             message = "DRY_RUN_ADD_MYSELF"
             try:
-                # this is just to get the success message
-                # TODO: Create a response class for the _get_rbp() response so you can capture whether or not ClientError happened
                 tmp = self._get_rbp()
                 success = tmp.success
             except botocore.exceptions.ClientError as error:
