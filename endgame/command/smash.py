@@ -141,7 +141,7 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclud
             translated_service = utils.get_service_translation(provided_service=resource.service)
             # client = None
             client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
-            response_message = smash_resource(service=translated_service, region=region, name=name,
+            response_message = smash_resource(service=resource.service, region=region, name=name,
                                               current_account_id=current_account_id,
                                               client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
             if undo and not dry_run:
@@ -166,7 +166,6 @@ def smash_resource(
         dry_run: bool,
         evil_principal: str,
 ) -> ResponseMessage:
-    service = utils.get_service_translation(provided_service=service)
     response_message = expose_service(provided_service=service, region=region, name=name,
                                       current_account_id=current_account_id,
                                       client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
