@@ -8,7 +8,10 @@ Use a one-liner command to backdoor an AWS account's resources with a rogue AWS 
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/kmcquade3.svg?style=social&label=Follow%20the%20author)](https://twitter.com/kmcquade3)
 [![Downloads](https://pepy.tech/badge/endgame)](https://pepy.tech/project/endgame)
 
-![](./docs/images/endgame.gif)
+<p align="center">
+  <img src="docs/images/endgame.gif">
+</p>
+
 
 **TLDR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire internet.
 
@@ -30,9 +33,9 @@ endgame expose --service s3 --name computers-were-a-mistake
 
 # Supported Backdoors
 
-`endgame` can create backdoors for resources in any of the services listed below.
+`endgame` can create backdoors for resources in any of the services listed in the table below.
 
-> ‼️ **Note**: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that `endgame` attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using `endgame`. 😊
+Note: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that `endgame` attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using `endgame`. 😊
 
 
 | Backdoor Resource Type             | Support | [AWS Access Analyzer Support][1] |
@@ -148,7 +151,9 @@ endgame expose --service iam --name test-resource-exposure
 
 Example output:
 
-> ![Expose for real](docs/images/add-myself-foreal.png)
+<p align="center">
+  <img src="docs/images/add-myself-foreal.png">
+</p>
 
 ## Step 5: Roll back changes
 
@@ -158,7 +163,9 @@ Example output:
 endgame expose --service iam --name test-resource-exposure --undo
 ```
 
-> ![Expose undo](docs/images/add-myself-undo.png)
+<p align="center">
+  <img src="docs/images/add-myself-undo.png">
+</p>
 
 ## Step 6: Smash your AWS Account to Pieces
 
@@ -183,7 +190,7 @@ make terraform-destroy
 
 The IAM Permissions listed below are used to create these backdoors.
 
-**NOTE**: You don't need **all** of these permissions to run the tool. You just need enough from each service. So, `s3:ListAllMyBuckets`, `s3:GetBucketPolicy`, and `s3:PutBucketPolicy` are all the permissions needed to leverage this tool to expose S3 buckets.
+You don't need **all** of these permissions to run the tool. You just need enough from each service. For example, `s3:ListAllMyBuckets`, `s3:GetBucketPolicy`, and `s3:PutBucketPolicy` are all the permissions needed to leverage this tool to expose S3 buckets.
 
 ```json
 {
