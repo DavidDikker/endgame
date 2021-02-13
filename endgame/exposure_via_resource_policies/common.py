@@ -78,8 +78,6 @@ class ResourceType(object):
             operation = "DRY_RUN_ADD_MYSELF"
             message = "DRY_RUN_ADD_MYSELF"
             try:
-                # this is just to get the success message
-                # TODO: Create a response class for the _get_rbp() response so you can capture whether or not ClientError happened
                 tmp = self._get_rbp()
                 success = tmp.success
             except botocore.exceptions.ClientError as error:

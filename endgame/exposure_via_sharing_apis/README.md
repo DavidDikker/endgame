@@ -26,6 +26,7 @@ Actions:
 ### RDS snapshot
 Actions:
 - rds [modify-db-snapshot](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/modify-db-snapshot.html)
+  - [CLI to share a snapshot](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ShareSnapshot.html#USER_ShareSnapshot.Sharing)
 
 ### RDS DB Cluster snapshot
 Actions:
