@@ -114,7 +114,6 @@ This program makes modifications to live AWS Infrastructure, which can vary from
 > 🚨This will create real AWS infrastructure and will cost you money! 🚨
 
 ```bash
-```bash
 # To create the demo infrastructure
 make terraform-demo
 ```

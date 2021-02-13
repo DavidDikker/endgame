@@ -12,18 +12,6 @@ To get notified when it is available, you can take one of the following methods:
 1. In GitHub, select "Watch for new releases"
 2. Follow the author [@kmcquade](https://twitter.com/kmcquade3) on Twitter. He will announce when this feature is available 😃
 
-### Backdoors via Sharing APIs
-
-* We will support this in a future release
-
-| Backdoored Resource Type      | Support Status |
-|-------------------------------|----------------|
-| EC2 AMIs                      | ❌             |
-| EBS Snapshots                 | ❌             |
-| RDS Snapshots                 | ❌             |
-| RDS DB Cluster Snapshots      | ❌             |
-
-
 ### Resources not on roadmap
 
 | Resource Type                 | Support Status |

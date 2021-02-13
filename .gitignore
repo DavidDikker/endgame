@@ -69,3 +69,4 @@ packer_cache/
 .notes/*
 **/private.tf
 .python-version
+ecr-policy.json

