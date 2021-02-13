@@ -82,7 +82,7 @@ aws lambda invoke --function-name $VICTIM_LAMBDA
 * **Trusted Accounts Only**: Ensure that cross-account Lambda functions allow access only to trusted accounts to prevent unknown function invocation requests
 * **Ensure access is necessary**: For any trusted accounts that do have access, ensure that the access is absolutely necessary.
 * **AWS Access Analyzer**: Leverage AWS Access Analyzer to report on external access to Lambda Functions. See [the AWS Access Analyzer documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-lambda) for more details.
-* **Restrict access to IAM permissions that could expose your Lambda Functions**: Tightly control access to the following IAM actions:
+* **Restrict access to IAM permissions that could lead to exposure of your Lambda Functions**: Tightly control access to the following IAM actions:
   - [lambda:AddPermission](https://docs.aws.amazon.com/lambda/latest/dg/API_AddPermission.html): _Grants permission to give an AWS service or another account permission to use an AWS Lambda function_
   - [lambda:GetPolicy](https://docs.aws.amazon.com/lambda/latest/dg/API_GetPolicy.html): _Grants permission to view the resource-based policy for an AWS Lambda function, version, or alias_
   - [lambda:InvokeFunction](https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html): _Grants permission to invoke an AWS Lambda function_

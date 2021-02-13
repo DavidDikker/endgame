@@ -4,10 +4,9 @@ Use a one-liner command to backdoor an AWS account's resources with a rogue AWS 
 
 [![continuous-integration](https://github.com/salesforce/endgame/workflows/continuous-integration/badge.svg?)](https://github.com/salesforce/endgame/actions?query=workflow%3Acontinuous-integration)
 [![Documentation Status](https://readthedocs.org/projects/endgame/badge/?version=latest)](https://endgame.readthedocs.io/en/latest/?badge=latest)
-[![Join the chat at https://gitter.im/salesforce/policy_sentry](https://badges.gitter.im/salesforce/endgame.svg)](https://gitter.im/salesforce/endgame?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/salesforce/endgame](https://badges.gitter.im/salesforce/endgame.svg)](https://gitter.im/salesforce/endgame?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/kmcquade3.svg?style=social&label=Follow%20the%20author)](https://twitter.com/kmcquade3)
-
-[//]: [![Downloads](https://pepy.tech/badge/endgame)](https://pepy.tech/project/endgame)
+[![Downloads](https://pepy.tech/badge/endgame)](https://pepy.tech/project/endgame)
 
 ![](./docs/images/endgame.gif)
 
@@ -31,28 +30,31 @@ endgame expose --service s3 --name computers-were-a-mistake
 
 ## Supported Backdoors
 
-`endgame` can create backdoors for resources in any of the services listed below. While AWS Access Analyzer is meant to detect exposed resources of these types, it currently only supports 7/18 of the services that `endgame` attacks.
+`endgame` can create backdoors for resources in any of the services listed below.
 
-| Backdoor Resource Type        | Support | [AWS Access Analyzer Support][1] |
-|-------------------------------|---------|-------------------------         |
-| ACM PCA                       | ✅     | ❌                               |
-| CloudWatch Resource Policies  | ✅     | ❌                               |
-| EC2 AMIs                      | ✅     | ❌                               |
-| EBS Snapshots                 | ✅     | ❌                               |
-| ECR Repositories              | ✅     | ❌                               |
-| EFS File Systems              | ✅     | ❌                               |
-| ElasticSearch Domains         | ✅     | ❌                               |
-| Glacier Vault Access Policies | ✅     | ❌                               |
-| IAM Roles                     | ✅     | ✅                               |
-| KMS Keys                      | ✅     | ✅                               |
-| Lambda Functions              | ✅     | ✅                               |
-| Lambda Layers                 | ✅     | ✅                               |
-| RDS Snapshots                 | ✅     | ❌                               |
-| S3 Buckets                    | ✅     | ✅                               |
-| Secrets Manager Secrets       | ✅     | ✅                               |
-| SES Identity Policies         | ✅     | ❌                               |
-| SQS Queues                    | ✅     | ✅                               |
-| SNS Topics                    | ✅     | ❌                               |
+> ‼️ **Note**: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that `endgame` attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using `endgame`. 😊
+
+
+| Backdoor Resource Type             | Support | [AWS Access Analyzer Support][1] |
+|------------------------------------|---------|----------------------------------|
+| ACM Private CAs                    | ✅     | ❌                               |
+| CloudWatch Resource Policies       | ✅     | ❌                               |
+| EBS Volume Snapshots               | ✅     | ❌                               |
+| EC2 Amazon Machine Images (AMIs)   | ✅     | ❌                               |
+| ECR Container Repositories         | ✅     | ❌                               |
+| EFS File Systems                   | ✅     | ❌                               |
+| ElasticSearch Domains              | ✅     | ❌                               |
+| Glacier Vault Access Policies      | ✅     | ❌                               |
+| IAM Roles                          | ✅     | ✅                               |
+| KMS Keys                           | ✅     | ✅                               |
+| Lambda Functions                   | ✅     | ✅                               |
+| Lambda Layers                      | ✅     | ✅                               |
+| RDS Snapshots                      | ✅     | ❌                               |
+| S3 Buckets                         | ✅     | ✅                               |
+| Secrets Manager Secrets            | ✅     | ✅                               |
+| SES Sender Authorization Policies  | ✅     | ❌                               |
+| SQS Queues                         | ✅     | ✅                               |
+| SNS Topics                         | ✅     | ❌                               |
 
 ## Tutorial
 
@@ -78,13 +80,13 @@ Now you should be able to execute `endgame` from command line by running `endgam
 * To enable Bash completion, put this in your `~/.bashrc`:
 
 ```bash
-eval "$(_CLOUDSPLAINING_COMPLETE=source cloudsplaining)"
+eval "$(_ENDGAME_COMPLETE=source endgame)"
 ```
 
 * To enable ZSH completion, put this in your `~/.zshrc`:
 
 ```bash
-eval "$(_CLOUDSPLAINING_COMPLETE=source_zsh cloudsplaining)"
+eval "$(_ENDGAME_COMPLETE=source_zsh endgame)"
 ```
 
 ### Setup
@@ -181,40 +183,11 @@ endgame smash --service all --undo
 make terraform-destroy
 ```
 
-## Current Resource Support Statuses
-
-### Backdoors via Resource-based Policies
-
-| Backdoor Resource Type        | Support | [AWS Access Analyzer Support][1] |
-|-------------------------------|---------|-------------------------         |
-| ACM PCA                       | ✅     | ❌                               |
-| CloudWatch Resource Policies  | ✅     | ❌                               |
-| ECR Repositories              | ✅     | ❌                               |
-| EFS File Systems              | ✅     | ❌                               |
-| ElasticSearch Domains         | ✅     | ❌                               |
-| Glacier Vault Access Policies | ✅     | ❌                               |
-| IAM Roles                     | ✅     | ✅                               |
-| KMS Keys                      | ✅     | ✅                               |
-| Lambda Functions              | ✅     | ✅                               |
-| Lambda Layers                 | ✅     | ✅                               |
-| S3 Buckets                    | ✅     | ✅                               |
-| Secrets Manager Secrets       | ✅     | ✅                               |
-| SES Identity Policies         | ✅     | ❌                               |
-| SQS Queues                    | ✅     | ✅                               |
-| SNS Topics                    | ✅     | ❌                               |
-
-### Backdoors via Sharing APIs
-
-| Backdoored Resource Type      | Support Status |
-|-------------------------------|----------------|
-| EC2 AMIs                      | ✅             |
-| EBS Snapshots                 | ✅             |
-| RDS Snapshots                 | ✅             |
-| RDS DB Cluster Snapshots      | ❌             |
-
 ## IAM Permissions
 
-The following IAM Permissions are used to create these backdoors:
+The IAM Permissions listed below are used to create these backdoors.
+
+> **NOTE**: You don't need **all** of these permissions to run the tool. You just need enough from each service. So, `s3:ListAllMyBuckets`, `s3:GetBucketPolicy`, and `s3:PutBucketPolicy` are all the permissions needed to leverage this tool to expose S3 buckets.
 
 ```json
 {
@@ -228,9 +201,12 @@ The following IAM Permissions are used to create these backdoors:
                 "acm-pca:GetPolicy",
                 "acm-pca:ListCertificateAuthorities",
                 "acm-pca:PutPolicy",
+                "ec2:DescribeImageAttribute",
+                "ec2:DescribeImages",
                 "ec2:DescribeSnapshotAttribute",
                 "ec2:DescribeSnapshots",
                 "ec2:ModifySnapshotAttribute",
+                "ec2:ModifyImageAttribute",
                 "ecr:DescribeRepositories",
                 "ecr:DeleteRepositoryPolicy",
                 "ecr:GetRepositoryPolicy",
@@ -269,8 +245,8 @@ The following IAM Permissions are used to create these backdoors:
                 "rds:DescribeDbSnapshotAttributes",
                 "rds:ModifyDbSnapshotAttribute",
                 "rds:ModifyDbClusterSnapshotAttribute",
-                "s3:ListAllMyBuckets",
                 "s3:GetBucketPolicy",
+                "s3:ListAllMyBuckets",
                 "s3:PutBucketPolicy",
                 "secretsmanager:GetResourcePolicy",
                 "secretsmanager:DeleteResourcePolicy",
@@ -296,8 +272,6 @@ The following IAM Permissions are used to create these backdoors:
     ]
 }
 ```
-
-You don't need **all** of these permissions to run the tool. You just need enough from each service. So, `s3:ListAllMyBuckets`, `s3:GetBucketPolicy`, and `s3:PutBucketPolicy` are all the permissions needed to leverage this tool to expose S3 buckets.
 
 ## Contributing
 
