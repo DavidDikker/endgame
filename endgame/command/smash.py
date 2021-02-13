@@ -11,7 +11,7 @@ from policy_sentry.util.arns import (
 from endgame import set_log_level
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared.validate import click_validate_supported_aws_service, click_validate_user_or_principal_arn, click_validate_comma_separated_resource_names
-from endgame.shared import utils, constants
+from endgame.shared import utils, constants, scary_warnings
 from endgame.command.list_resources import get_all_resources_for_all_services, list_resources_by_service
 from endgame.command.expose import expose_service
 from endgame.shared.response_message import ResponseMessage
@@ -102,6 +102,12 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclud
     sts_client = get_boto3_client(profile=profile, service="sts", region=region, cloak=cloak)
     current_account_id = get_current_account_id(sts_client=sts_client)
     if evil_principal.strip('"').strip("'") == "*":
+        if not scary_warnings.confirm_anonymous_principal():
+            utils.print_red("User cancelled, exiting")
+            exit()
+        else:
+            print()
+            
         principal_type = "internet-wide access"
         principal_name = "*"
     else:
@@ -165,3 +171,4 @@ def smash_resource(
                                       current_account_id=current_account_id,
                                       client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
     return response_message
+    
