@@ -31,12 +31,13 @@ endgame expose --service s3 --name computers-were-a-mistake
 
 ## Supported Backdoors
 
-`endgame` can create backdoors for resources in any of the services listed below. While AWS Access Analyzer is meant to detect exposed resources of these types, it currently only supports 7/17 of the services that `endgame` attacks.
+`endgame` can create backdoors for resources in any of the services listed below. While AWS Access Analyzer is meant to detect exposed resources of these types, it currently only supports 7/18 of the services that `endgame` attacks.
 
 | Backdoor Resource Type        | Support | [AWS Access Analyzer Support][1] |
 |-------------------------------|---------|-------------------------         |
 | ACM PCA                       | ✅     | ❌                               |
 | CloudWatch Resource Policies  | ✅     | ❌                               |
+| EC2 AMIs                      | ✅     | ❌                               |
 | EBS Snapshots                 | ✅     | ❌                               |
 | ECR Repositories              | ✅     | ❌                               |
 | EFS File Systems              | ✅     | ❌                               |
@@ -206,7 +207,7 @@ make terraform-destroy
 
 | Backdoored Resource Type      | Support Status |
 |-------------------------------|----------------|
-| EC2 AMIs                      | ❌             |
+| EC2 AMIs                      | ✅             |
 | EBS Snapshots                 | ✅             |
 | RDS Snapshots                 | ✅             |
 | RDS DB Cluster Snapshots      | ❌             |

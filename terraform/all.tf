@@ -10,6 +10,10 @@ module "ebs" {
   source = "./ebs-snapshot"
 }
 
+module "ec2_ami" {
+  source = "./ec2-ami"
+}
+
 module "ecr" {
   source = "./ecr-repository"
 }
@@ -63,8 +67,10 @@ module "sqs_queue" {
   source = "./sqs-queue"
 }
 
+
+
 //output "names" {
-//  value = module.ebs.id
+//  value = module.ec2_ami.ami_id
 //}
 
 /*
@@ -74,8 +80,9 @@ ElasticSearch Domain: ${module.elasticsearch_domain.name}
 output "names" {
   value = <<README
 ACM Private Certificate Authority (ACM PCA): ${module.acm_pca.arn}
-ECR Registry: ${module.ecr.name}
 EBS Volume: ${module.ebs.id}
+ECR Registry: ${module.ecr.name}
+EC2 AMI: ${module.ec2_ami.ami_id}
 EFS File System: ${module.efs.id}
 IAM Role: ${module.iam_role.name}
 Lambda Function: ${module.lambda_function.name}
