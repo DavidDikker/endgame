@@ -12,7 +12,7 @@ from policy_sentry.util.arns import (
 from endgame import set_log_level
 from endgame.exposure_via_resource_policies import glacier_vault, sqs, lambda_layer, lambda_function, kms, cloudwatch_logs, efs, s3, \
     sns, iam, ecr, secrets_manager, ses, elasticsearch, acm_pca
-from endgame.exposure_via_sharing_apis import rds_snapshots
+from endgame.exposure_via_sharing_apis import rds_snapshots, ebs_snapshots
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared import constants, utils
 from endgame.shared.validate import (
@@ -194,6 +194,8 @@ def expose_service(
         resource = sqs.SqsQueue(name=name, client=client, current_account_id=current_account_id, region=region)
     elif service == "rds":
         resource = rds_snapshots.RdsSnapshot(name=name, client=client, current_account_id=current_account_id, region=region)
+    elif service == "ebs":
+        resource = ebs_snapshots.EbsSnapshot(name=name, client=client, current_account_id=current_account_id, region=region)
     # fmt: on
 
     if undo and not dry_run:

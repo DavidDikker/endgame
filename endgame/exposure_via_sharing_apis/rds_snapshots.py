@@ -53,7 +53,7 @@ class RdsSnapshot(ResourceSharingApi, ABC):
         if accounts_to_add:
             logger.debug(f"Sharing the snapshot {self.name} with the accounts {', '.join(accounts_to_add)}")
         if accounts_to_remove:
-            logger.debug(f"Sharing the snapshot {self.name} with the accounts {', '.join(accounts_to_add)}")
+            logger.debug(f"Removing access to snapshot {self.name} for the accounts {', '.join(accounts_to_add)}")
         try:
             snapshot_attributes_response = self.client.modify_db_snapshot_attribute(
                 DBSnapshotIdentifier=self.name,
