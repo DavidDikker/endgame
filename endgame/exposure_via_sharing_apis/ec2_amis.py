@@ -181,7 +181,7 @@ class Ec2Images(ResourceTypes):
             image_id = resource.get("ImageId")
             name = resource.get("Name")
             volume_id = resource.get("VolumeId")
-            arn = f"arn:aws:{self.service}:{self.region}:{self.current_account_id}:{self.resource_type}/{image_id}"
+            arn = f"arn:aws:ec2:{self.region}:{self.current_account_id}:{self.resource_type}/{image_id}"
             list_resources_response = ListResourcesResponse(
                 service=self.service, account_id=self.current_account_id, arn=arn, region=self.region,
                 resource_type=self.resource_type, name=image_id)
