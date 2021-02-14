@@ -255,6 +255,9 @@ Further documentation on how to query for specific API calls made to each servic
 
 Behavioral-based detection is currently being researched and developed by [Ryan Stalets](https://twitter.com/RyanStalets). [GitHub issue #46](https://github.com/salesforce/endgame/issues/46) is being used to track this work. We welcome all contributions and discussion!
 
+#### Further blue Team Reading
+
+Additional information on AWS resource policies, how this tool works in the victim account, and identification/containment suggestions is [here](docs/resource-policy-primer.md).
 
 # IAM Permissions
 
