@@ -23,6 +23,7 @@ nav:
   - Installation: 'installation.md'
   - Tutorial: 'tutorial.md'
   - Permissions: 'iam-permissions.md'
+  - Detection: 'detection.md'
 
   - "<b>Backdoor Resource Types</b>":
     - ACM Private CAs: 'risks/acm-pca.md'
@@ -51,6 +52,5 @@ nav:
   - "<b>Appendices</b>":
     - Terraform Demo Infrastructure: 'appendices/terraform-demo-infrastructure.md'
     - ACM PCA Activation: 'appendices/acm-pca-activation.md'
-    - User-Agent Detection: 'appendices/user-agent-detection.md'
     - Roadmap: 'appendices/roadmap.md'
     - FAQ: 'appendices/faq.md'
