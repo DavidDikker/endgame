@@ -1,4 +1,4 @@
-# endgame
+# Endgame
 
 Use a one-liner command to backdoor an AWS account's resources with a rogue AWS Account - or to the entire internet 😈
 
