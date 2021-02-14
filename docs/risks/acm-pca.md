@@ -1,5 +1,10 @@
 # ACM Private Certificate Authority (PCA)
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [References](#references)
+
 ## Steps to Reproduce
 
 * ‼️ If you are using the Terraform demo infrastructure, you must take some follow-up steps after provisioning the resources in order to be able to expose the demo resource. This is due to how ACM PCA works. For instructions, see the [Appendix on ACM PCA Activation](../appendices/acm-pca-activation.md)
@@ -59,13 +64,13 @@ TODO
 * **Trusted Accounts Only**: Ensure that AWS PCA Certificates are only shared with trusted accounts, and that the trusted accounts truly need access to the Certificates.
 * **Ensure access is necessary**: For any trusted accounts that do have access, ensure that the access is absolutely necessary.
 * **Restrict access to IAM permissions that could lead to exposing usage of your private CAs**: Tightly control access to the following IAM actions:
-  - [acm-pca:GetPolicy](https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetPolicy.html): _Description_
-  - [acm-pca:PutPolicy](https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_PutPolicy.html): _Description_
-  - [acm-pca:DeletePolicy](https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeletePolicy.html): _Description_
+  - [acm-pca:GetPolicy](https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetPolicy.html): Retrieves the policy on an ACM Private CA._
+  - [acm-pca:PutPolicy](https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_PutPolicy.html): _Puts a policy on an ACM Private CA._
+  - [acm-pca:DeletePolicy](https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeletePolicy.html): _Deletes the policy for an ACM Private CA._
 
 Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure activities. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 
-## Resources
+## References
 
 * [Attaching a Resource-based Policy for Cross Account Access in ACM PCA](https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-rbp.html)
 * [GetPolicy](https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetPolicy.html)

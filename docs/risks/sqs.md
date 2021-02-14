@@ -1,5 +1,11 @@
 # SQS
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [Basic Detection](#basic-detection)
+* [References](#references)
+
 ## Steps to Reproduce
 
 * To expose the resource using `endgame`, run the following from the victim account:
@@ -46,8 +52,8 @@ TODO
 * **Ensure access is necessary**: For any trusted accounts that do have access, ensure that the access is absolutely necessary.
 * **AWS Access Analyzer**: Leverage AWS Access Analyzer to report on external access to  SQS Queues. See [the AWS Access Analyzer documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) for more details.
 * **Restrict access to IAM permissions that could lead to exposure of your SQS Queues**: Tightly control access to the following IAM actions:
-  - [sqs:AddPermission](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_AddPermission.html): _Description_
-  - [sqs:RemovePermission](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_RemovePermission.html): _Description_
+  - [sqs:AddPermission](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_AddPermission.html): _Adds a permission to a queue for a specific principal._
+  - [sqs:RemovePermission](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_RemovePermission.html): _Revokes any permissions in the queue policy that matches the specified Label parameter._
   - [sqs:GetQueueAttributes](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_GetQueueAttributes.html): _Gets attributes for the specified queue. This includes retrieving the list of principals who are authorized to access the queue._
   - [sqs:GetQueueUrl](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_GetQueueUrl.html): _Returns the URL of an existing queue._
   - [sqs:ListQueues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ListQueues.html): _Returns a list of your queues._

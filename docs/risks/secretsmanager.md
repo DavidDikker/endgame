@@ -1,5 +1,11 @@
 # Secrets Manager
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [Basic Detection](#basic-detection)
+* [References](#references)
+
 ## Steps to Reproduce
 
 * **Option 1**: To expose the resource using `endgame`, run the following from the victim account:

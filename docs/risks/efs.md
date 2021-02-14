@@ -1,5 +1,11 @@
 # Elastic File Systems (EFS)
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [Basic Detection](#basic-detection)
+* [References](#references)
+
 ## Steps to Reproduce
 
 > Note: The Terraform demo infrastructure will output the EFS File System ID. If you are using the Terraform demo infrastructure, you must leverage the file system ID in the `--name` parameter.

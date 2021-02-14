@@ -1,5 +1,11 @@
 # Lambda Function Cross-Account Access
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [Basic Detection](#basic-detection)
+* [References](#references)
+
 AWS Lambda Permission Policies (aka resource-based policies) can allow functions to be invoked from AWS accounts other than the one it is running in.
 
 Compromised Lambda functions are a known attack path for [Privilege Escalation](https://resources.infosecinstitute.com/topic/cloudgoat-walkthrough-lambda-privilege-escalation/) and other nefarious use cases. While the impact often depends on the context of the Lambdas itself, Lambda functions often modify AWS infrastructure or have data plane access. Abusing these capabilities could compromise the confidentiality and integrity of the resources in the account.

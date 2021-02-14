@@ -1,5 +1,10 @@
 # Lambda Layers
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [References](#references)
+
 ## Steps to Reproduce
 
 * To expose the resource using `endgame`, run the following from the victim account:

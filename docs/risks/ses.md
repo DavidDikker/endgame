@@ -1,5 +1,11 @@
 # SES Sender Authorization Policies
 
+* [Steps to Reproduce](#steps-to-reproduce)
+* [Exploitation](#exploitation)
+* [Remediation](#remediation)
+* [Basic Detection](#basic-detection)
+* [References](#references)
+
 SES Sending Authorization Policies can be used to add a rogue IAM user as a [Delegate sender](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/sending-authorization-delegate-sender-tasks.html). This can result in a malicous user sending an email on behalf of your organization, which could lead to phishing attacks against customers or employees, as well as a loss of consumer trust and reputation loss.
 
 ### How it works
