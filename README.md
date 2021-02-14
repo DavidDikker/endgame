@@ -38,26 +38,26 @@ endgame expose --service s3 --name computers-were-a-mistake
 Note: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that `endgame` attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using `endgame`. 😊
 
 
-| Backdoor Resource Type             | Support | [AWS Access Analyzer Support][1] |
-|------------------------------------|---------|----------------------------------|
-| ACM Private CAs                    | ✅     | ❌                               |
-| CloudWatch Resource Policies       | ✅     | ❌                               |
-| EBS Volume Snapshots               | ✅     | ❌                               |
-| EC2 Amazon Machine Images (AMIs)   | ✅     | ❌                               |
-| ECR Container Repositories         | ✅     | ❌                               |
-| EFS File Systems                   | ✅     | ❌                               |
-| ElasticSearch Domains              | ✅     | ❌                               |
-| Glacier Vault Access Policies      | ✅     | ❌                               |
-| IAM Roles                          | ✅     | ✅                               |
-| KMS Keys                           | ✅     | ✅                               |
-| Lambda Functions                   | ✅     | ✅                               |
-| Lambda Layers                      | ✅     | ✅                               |
-| RDS Snapshots                      | ✅     | ❌                               |
-| S3 Buckets                         | ✅     | ✅                               |
-| Secrets Manager Secrets            | ✅     | ✅                               |
-| SES Sender Authorization Policies  | ✅     | ❌                               |
-| SQS Queues                         | ✅     | ✅                               |
-| SNS Topics                         | ✅     | ❌                               |
+| Backdoor Resource Type                                  | Support | [AWS Access Analyzer Support][1] |
+|---------------------------------------------------------|---------|----------------------------------|
+| [ACM Private CAs](docs/risks/acm-pca.md)                | ✅     | ❌                               |
+| [CloudWatch Resource Policies](docs/risks/logs.md)      | ✅     | ❌                               |
+| [EBS Volume Snapshots](docs/risks/ebs.md)               | ✅     | ❌                               |
+| [EC2 AMIs](docs/risks/amis.md)                          | ✅     | ❌                               |
+| [ECR Container Repositories](docs/risks/ecr.md)         | ✅     | ❌                               |
+| [EFS File Systems](docs/risks/efs.md)                   | ✅     | ❌                               |
+| [ElasticSearch Domains](docs/risks/es.md)               | ✅     | ❌                               |
+| [Glacier Vault Access Policies](docs/risks/glacier.md)  | ✅     | ❌                               |
+| [IAM Roles](docs/risks/iam-roles.md)                    | ✅     | ✅                               |
+| [KMS Keys](docs/risks/kms.md)                           | ✅     | ✅                               |
+| [Lambda Functions](docs/risks/lambda-functions.md)      | ✅     | ✅                               |
+| [Lambda Layers](docs/risks/lambda-layers.md)            | ✅     | ✅                               |
+| [RDS Snapshots](docs/risks/rds-snapshots.md)            | ✅     | ❌                               |
+| [S3 Buckets](docs/risks/s3.md)                          | ✅     | ✅                               |
+| [Secrets Manager Secrets](docs/risks/secretsmanager.md) | ✅     | ✅                               |
+| [SES Sender Authorization Policies](docs/risks/ses.md)  | ✅     | ❌                               |
+| [SQS Queues](docs/risks/sqs.md)                         | ✅     | ✅                               |
+| [SNS Topics](docs/risks/sns.md)                         | ✅     | ❌                               |
 
 
 ## Installation
