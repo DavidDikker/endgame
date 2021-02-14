@@ -16,7 +16,7 @@ Endgame can run in two modes, ```expose``` or ```smash```. The less-destructive 
 
 ```smash```, on the other hand, is more destructive (and louder). ```smash``` can run on a single service or all supported services. In either case, for each service it enumerates a list of resources in that region, reads the current resource policy on each, and applies a new policy which includes the "evil principal" the attacker has specified. The net effect of this is that depending on the privileges they have in the victim account, an attacker can insert dozens of back doors which are not controlled by the victim's IAM policies. 
 
-These back doors largely grant access to accomplish data exfiltration from buckets, snapshots, etc. However, other things could be possible depending on the victim account's architecture:
+These back doors largely grant access to accomplish data exfiltration from buckets, snapshots, etc. However, other things could be possible depending on the victim account's architecture. For example, an attacker could use these back doors to:
 
 * Escalate privileges by enabling the attacker's evil principal to assume roles in the victim account
 * Manipulate CI/CD pipelines which rely on AWS S3 as an artifact source
@@ -24,6 +24,9 @@ These back doors largely grant access to accomplish data exfiltration from bucke
 * Invoke Lambda functions with unfiltered input, bypassing API Gateway for serverless API's
 * Provide attacker-defined input to applications which leverage SQS or SNS for work control
 * Pivot to other applications which have credentials stored in Secrets Manager
+* And more!
 
 ### Incident Identification & Containment Steps
-In incidents where resource policies may have been modified (can be determined using CloudTrail, see [risks](docs/risks/)), each resource policy should be reviewed to identify potential back doors or unintended internet exposure. The attacker's interactions with these resources should also be reviewed where possible. CloudTrail only logs data-level events (S3 object retrieval, Lambda function invocation, etc) for three services: S3, Lambda, and KMS. This visibility is also not enabled by default on trails. Other management-level events such as manipulation of Lambda function code will be visible in a standard management-event CloudTrail trail.
+In incidents where resource policies may have been modified (can be determined using CloudTrail, see [risks](/docs/risks/)), each resource policy should be reviewed to identify potential back doors or unintended internet exposure. The attacker's interactions with these resources should also be reviewed where possible. 
+
+CloudTrail only logs data-level events (S3 object retrieval, Lambda function invocation, etc) for three services: S3, Lambda, and KMS. This visibility is also not enabled by default on trails. Other management-level events such as manipulation of Lambda function code will be visible in a standard management-event CloudTrail trail. Further documentation for working with CloudTrail can be found [here](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-getting-started.html).
