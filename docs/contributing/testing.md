@@ -36,6 +36,7 @@ make integration-test
 ```
 
 This does the following:
+
 * Sets up your local dev environment (see `setup-dev`) in the `Makefile`
 * Creates the Terraform infrastructure (see `terraform-demo` in the `Makefile`)
 * Runs `list-resources`, `exploit --dry-run`, and `expose` against this live infrastructure

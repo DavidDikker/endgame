@@ -1,4 +1,4 @@
-# SQS
+# SQS Queues
 
 * [Steps to Reproduce](#steps-to-reproduce)
 * [Exploitation](#exploitation)

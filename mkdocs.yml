@@ -40,9 +40,9 @@ nav:
     - RDS Snapshots: 'risks/rds-snapshots.md'
     - S3 Buckets: 'risks/s3.md'
     - Secrets Manager: 'risks/secretsmanager.md'
-    - SES: 'risks/ses.md'
-    - SNS: 'risks/sns.md'
-    - SQS: 'risks/sqs.md'
+    - SES Authorized Senders: 'risks/ses.md'
+    - SNS Topics: 'risks/sns.md'
+    - SQS Queues: 'risks/sqs.md'
 
   - "<b>Contributing</b>":
     - Contributing: 'contributing/contributing.md'
@@ -51,3 +51,6 @@ nav:
   - "<b>Appendices</b>":
     - Terraform Demo Infrastructure: 'appendices/terraform-demo-infrastructure.md'
     - ACM PCA Activation: 'appendices/acm-pca-activation.md'
+    - User-Agent Detection: 'appendices/user-agent-detection.md'
+    - Roadmap: 'appendices/roadmap.md'
+    - FAQ: 'appendices/faq.md'
