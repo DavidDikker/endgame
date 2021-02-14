@@ -70,6 +70,15 @@ After an EBS Snapshot is made public, an attacker can then:
 
 Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure activities. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 
+## Basic Detection
+The following CloudWatch Log Insights query will include exposure actions taken by endgame:
+```
+fields eventTime, eventSource, eventName, userIdentity.arn, userAgent
+| filter eventSource='ec2.amazonaws.com' and (eventName='ModifySnapshotAttribute' and requestParameters.attributeType='CREATE_VOLUME_PERMISSION') 
+```
+
+This query assumes that your CloudTrail logs are being sent to CloudWatch and that you have selected the correct log group.
+
 ## References
 
 * [Sharing an Unencrypted Snapshot using the Console](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html#share-unencrypted-snapshot)

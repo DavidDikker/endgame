@@ -94,6 +94,21 @@ TODO
 
 Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure activities. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 
+## Basic Detection
+The following CloudWatch Log Insights query will include exposure actions taken by endgame:
+```
+fields eventTime, eventSource, eventName, userIdentity.arn, userAgent
+| filter eventSource='elasticfilesystem.amazonaws.com' and eventName='PutFileSystemPolicy'
+```
+
+The following query detects policy modifications which include the default IOC string:
+```
+fields eventTime, eventSource, eventName, userIdentity.arn, userAgent
+| filter eventSource='elasticfilesystem.amazonaws.com' and (eventName='PutFileSystemPolicy' and requestParameters.policy like 'Endgame')
+```
+
+This query assumes that your CloudTrail logs are being sent to CloudWatch and that you have selected the correct log group.
+
 ## References
 
 * [put-filesystem-policy](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/efs/put-file-system-policy.html)

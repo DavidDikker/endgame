@@ -57,10 +57,19 @@ After the RDS snapshot is public or shared with the rogue user account, an attac
   - [rds:DescribeDbClusterSnapshots](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DescribeDBClusterSnapshots.html): _Grants permission to return information about DB cluster snapshots._
   - [rds:DescribeDbSnapshotAttributes](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DescribeDBSnapshotAttributes.html): _Grants permission to return a list of DB snapshot attribute names and values for a manual DB snapshot. This includes information on which AWS Accounts have access to the snapshot._
   - [rds:DescribeDbSnapshots](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DescribeDBSnapshots.html): _Grants permission to return information about DB snapshots_
-  - [rds:ModifyDbSnapshotAttribute](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_ModifyDBSnapshotAttribute.html): _Grants permission to add an attribute and values to, or removes an attribute and values from, a manual DB snapshot. This includes the ability to share snapshots with other AWS Accounts._
-  - [rds:ModifyDbClusterSnapshotAttribute](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_ModifyDBClusterSnapshotAttribute.html): _Grants permission to add an attribute and values to, or removes an attribute and values from, a manual DB cluster snapshot. This includes the ability to share snapshots with other AWS Accounts._
+  - [rds:ModifyDBSnapshotAttribute](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_ModifyDBSnapshotAttribute.html): _Grants permission to add an attribute and values to, or removes an attribute and values from, a manual DB snapshot. This includes the ability to share snapshots with other AWS Accounts._
+  - [rds:ModifyDBClusterSnapshotAttribute](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_ModifyDBClusterSnapshotAttribute.html): _Grants permission to add an attribute and values to, or removes an attribute and values from, a manual DB cluster snapshot. This includes the ability to share snapshots with other AWS Accounts._
 
 Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure activities. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
+
+## Basic Detection
+The following CloudWatch Log Insights query will include exposure actions taken by endgame:
+```
+fields eventTime, eventSource, eventName, userIdentity.arn, userAgent 
+| filter eventSource='rds.amazonaws.com' AND (eventName='ModifyDBSnapshotAttribute' or eventName='ModifyDBClusterSnapshotAttribute' and requestParameters.attributeName='restore')
+```
+
+This query assumes that your CloudTrail logs are being sent to CloudWatch and that you have selected the correct log group.
 
 ## References
 
