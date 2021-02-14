@@ -1,4 +1,4 @@
-# SNS
+# SNS Topics
 
 * [Steps to Reproduce](#steps-to-reproduce)
 * [Exploitation](#exploitation)
