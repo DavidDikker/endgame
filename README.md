@@ -33,11 +33,11 @@ endgame list-resources --service all
 endgame expose --service s3 --name computers-were-a-mistake
 ```
 
-# `endgame`: Creating Backdoors in AWS
+# Endgame: Creating Backdoors in AWS
 
-`endgame` abuses AWS's resource permission model to grant rogue users (or the internet) access to an AWS account's resources with a single command.
+Endgame abuses AWS's resource permission model to grant rogue users (or the internet) access to an AWS account's resources with a single command.
 
-`endgame` demonstrates (with a bit of shock and awe) how simple human errors in excessive permissions (such a granting `s3:*` access instead of `s3:GetObject`) can be abused by attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves. This is what inspired us to write this tool. Follow the [Tutorial](#tutorial) and observe how you can expose resources across **17 different AWS services** to the internet in a matter of seconds.
+Endgame demonstrates (with a bit of shock and awe) how simple human errors in excessive permissions (such a granting `s3:*` access instead of `s3:GetObject`) can be abused by attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves. This is what inspired us to write this tool. Follow the [Tutorial](#tutorial) and observe how you can expose resources across **17 different AWS services** to the internet in a matter of seconds.
 
 The resource types that can be exposed are of high value to attackers. This can include:
 * Privileged compute access (by exposing who can invoke `lambda` functions)
@@ -48,7 +48,7 @@ The resource types that can be exposed are of high value to attackers. This can 
 * Logging endpoints (`cloudwatch` resource policies)
 * Search and analytics engines (`elasticsearch` clusters)
 
-`endgame` is an attack tool, but it was written with a specific purpose. We wrote this tool with desired outcomes for the following audiences:
+Endgame is an attack tool, but it was written with a specific purpose. We wrote this tool with desired outcomes for the following audiences:
 1. **AWS**: We want AWS to empower their customers with the capabilities to fight these attacks. Our recommendations are outlined in the [Recommendations to AWS](#recommendations-to-aws) section.
 2. **AWS Customers and their customers**: It is better to have risks be more easily understood and know how to mitigate those risks than to force people to fight something novel. By increasing awareness about Resource Exposure and excessive permissions, we can protect ourselves against attacks where the attackers previously held the advantage and AWS customers were previously left blind.
 3. **Blue Teams**: Defense teams can leverage the guidance around user-agent detection, API call detection, and behavioral detection outlined in the [Recommendations to Blue Teams](#recommendations-to-blue-teams) section.
@@ -56,9 +56,9 @@ The resource types that can be exposed are of high value to attackers. This can 
 
 ## Supported Backdoors
 
-`endgame` can create backdoors for resources in any of the services listed in the table below.
+Endgame can create backdoors for resources in any of the services listed in the table below.
 
-Note: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that `endgame` attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using `endgame`. 😊
+Note: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that Endgame attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using Endgame. 😊
 
 | Backdoor Resource Type                                  | Support | [AWS Access Analyzer Support][1] |
 |---------------------------------------------------------|---------|----------------------------------|
@@ -97,7 +97,7 @@ brew tap salesforce/endgame https://github.com/salesforce/endgame
 brew install endgame
 ```
 
-Now you should be able to execute `endgame` from command line by running `endgame --help`.
+Now you should be able to execute Endgame from command line by running `endgame --help`.
 
 ### Shell Completion
 
@@ -212,13 +212,13 @@ make terraform-destroy
 
 ## Recommendations to AWS
 
-While [Cloudsplaining](https://opensource.salesforce.com/cloudsplaining/) (a Salesforce-produced AWS IAM assessment tool), showed us the pervasiveness of least privilege violations in AWS IAM across the industry, `endgame` shows us how it is already easy for attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves.
+While [Cloudsplaining](https://opensource.salesforce.com/cloudsplaining/) (a Salesforce-produced AWS IAM assessment tool), showed us the pervasiveness of least privilege violations in AWS IAM across the industry, Endgame shows us how it is already easy for attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves.
 
 [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html) is a tool produced by AWS that helps you identify the resources in your organization and accounts, such as Amazon S3 buckets or IAM roles, that are shared with an external entity. In short, it **detects** instances of this resource exposure problem. However, it does not by itself meet customer need, due to current gaps in coverage and the lack of preventative tooling to compliment it.
 
-At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that `endgame` attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using `endgame`. 😊
+At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that Endgame attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using Endgame. 😊
 
-The lack of preventative tooling makes this issue more difficult for customers. Ideally, customers should be able to say, "Nobody in my AWS Organization is allowed to share **any** resources that can be exposed by `endgame` outside of the organization, unless that resource is in an exemption list." This **should** be possible, but it is not. It is not even possible to use [AWS Service Control Policies (SCPS)](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html) - AWS's preventative guardrails service - to prevent `sts:AssumeRole` calls from outside your AWS Organization. The current SCP service limit of 5 SCPs per AWS account compounds this problem.
+The lack of preventative tooling makes this issue more difficult for customers. Ideally, customers should be able to say, "Nobody in my AWS Organization is allowed to share **any** resources that can be exposed by Endgame outside of the organization, unless that resource is in an exemption list." This **should** be possible, but it is not. It is not even possible to use [AWS Service Control Policies (SCPS)](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html) - AWS's preventative guardrails service - to prevent `sts:AssumeRole` calls from outside your AWS Organization. The current SCP service limit of 5 SCPs per AWS account compounds this problem.
 
 We recommend that AWS take the following measures in response:
 * Increase Access Advisor Support to cover the resources that can be exposed via Resource-based Policy modification, AWS RAM resource sharing, and resource-specific sharing APIs (such as RDS snapshots, EBS snapshots, and EC2 AMIs)
