@@ -62,24 +62,24 @@ Note: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon
 
 | Backdoor Resource Type                                  | Support | [AWS Access Analyzer Support][1] |
 |---------------------------------------------------------|---------|----------------------------------|
-| [ACM Private CAs](docs/risks/acm-pca.md)                | ✅     | ❌                               |
-| [CloudWatch Resource Policies](docs/risks/logs.md)      | ✅     | ❌                               |
-| [EBS Volume Snapshots](docs/risks/ebs.md)               | ✅     | ❌                               |
-| [EC2 AMIs](docs/risks/amis.md)                          | ✅     | ❌                               |
-| [ECR Container Repositories](docs/risks/ecr.md)         | ✅     | ❌                               |
-| [EFS File Systems](docs/risks/efs.md)                   | ✅     | ❌                               |
-| [ElasticSearch Domains](docs/risks/es.md)               | ✅     | ❌                               |
-| [Glacier Vault Access Policies](docs/risks/glacier.md)  | ✅     | ❌                               |
-| [IAM Roles](docs/risks/iam-roles.md)                    | ✅     | ✅                               |
-| [KMS Keys](docs/risks/kms.md)                           | ✅     | ✅                               |
+| [ACM Private CAs](https://endgame.readthedocs.io/en/latest/risks/acm-pca/)                | ✅     | ❌                               |
+| [CloudWatch Resource Policies](https://endgame.readthedocs.io/en/latest/risks/logs/)      | ✅     | ❌                               |
+| [EBS Volume Snapshots](https://endgame.readthedocs.io/en/latest/risks/ebs/)               | ✅     | ❌                               |
+| [EC2 AMIs](https://endgame.readthedocs.io/en/latest/risks/amis/)                          | ✅     | ❌                               |
+| [ECR Container Repositories](https://endgame.readthedocs.io/en/latest/risks/ecr/)         | ✅     | ❌                               |
+| [EFS File Systems](https://endgame.readthedocs.io/en/latest/risks/efs/)                   | ✅     | ❌                               |
+| [ElasticSearch Domains](https://endgame.readthedocs.io/en/latest/risks/es/)               | ✅     | ❌                               |
+| [Glacier Vault Access Policies](https://endgame.readthedocs.io/en/latest/risks/glacier/)  | ✅     | ❌                               |
+| [IAM Roles](https://endgame.readthedocs.io/en/latest/risks/iam-roles/)                    | ✅     | ✅                               |
+| [KMS Keys](https://endgame.readthedocs.io/en/latest/risks/kms/)                           | ✅     | ✅                               |
 | [Lambda Functions](docs/risks/lambda-functions.md)      | ✅     | ✅                               |
-| [Lambda Layers](docs/risks/lambda-layers.md)            | ✅     | ✅                               |
-| [RDS Snapshots](docs/risks/rds-snapshots.md)            | ✅     | ❌                               |
-| [S3 Buckets](docs/risks/s3.md)                          | ✅     | ✅                               |
-| [Secrets Manager Secrets](docs/risks/secretsmanager.md) | ✅     | ✅                               |
-| [SES Sender Authorization Policies](docs/risks/ses.md)  | ✅     | ❌                               |
-| [SQS Queues](docs/risks/sqs.md)                         | ✅     | ✅                               |
-| [SNS Topics](docs/risks/sns.md)                         | ✅     | ❌                               |
+| [Lambda Layers](https://endgame.readthedocs.io/en/latest/risks/lambda-layers/)            | ✅     | ✅                               |
+| [RDS Snapshots](https://endgame.readthedocs.io/en/latest/risks/rds-snapshots/)            | ✅     | ❌                               |
+| [S3 Buckets](https://endgame.readthedocs.io/en/latest/risks/s3/)                          | ✅     | ✅                               |
+| [Secrets Manager Secrets](https://endgame.readthedocs.io/en/latest/risks/secretsmanager/) | ✅     | ✅                               |
+| [SES Sender Authorization Policies](https://endgame.readthedocs.io/en/latest/risks/ses/)  | ✅     | ❌                               |
+| [SQS Queues](https://endgame.readthedocs.io/en/latest/risks/sns/)                         | ✅     | ✅                               |
+| [SNS Topics](https://endgame.readthedocs.io/en/latest/risks/sqs/)                         | ✅     | ❌                               |
 
 
 ## Installation
