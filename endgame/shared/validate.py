@@ -27,6 +27,23 @@ def click_validate_comma_separated_resource_names(ctx, param, value):
             raise click.BadParameter("Supply the list of resource names to exclude from results in a comma separated string.")
 
 
+def click_validate_comma_separated_excluded_services(ctx, param, value):
+    if value is not None:
+        try:
+            if value == "":
+                return []
+            else:
+                excluded_services = value.split(",")
+                for service in excluded_services:
+                    if service not in SUPPORTED_AWS_SERVICES:
+                        raise click.BadParameter(f"The service name {service} is invalid. Please provide a comma "
+                                                 f"separated list of supported services from the list: "
+                                                 f"{','.join(SUPPORTED_AWS_SERVICES)}")
+                return excluded_services
+        except ValueError:
+            raise click.BadParameter("Supply the list of resource names to exclude from results in a comma separated string.")
+
+
 def click_validate_user_or_principal_arn(ctx, param, value):
     if validate_user_or_principal_arn(value):
         return value
