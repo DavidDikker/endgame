@@ -139,7 +139,7 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclud
         current_account_id=current_account_id,
         profile=profile,
         cloak=cloak,
-        excluded_names=[],
+        excluded_names=excluded_names,
         excluded_services=excluded_services
     )
     results = resource_results.resources

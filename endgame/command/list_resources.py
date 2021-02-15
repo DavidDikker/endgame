@@ -98,7 +98,7 @@ def list_resources(service, profile, region, cloak, excluded_names, excluded_ser
         current_account_id=current_account_id,
         profile=profile,
         cloak=cloak,
-        excluded_names=[],
+        excluded_names=excluded_names,
         excluded_services=excluded_services
     )
     results = resource_results.resources
