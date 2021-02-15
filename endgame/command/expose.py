@@ -27,7 +27,7 @@ CBLINK = '\33[5m'
 CBLINK2 = '\33[6m'
 
 
-@click.command(name="expose", short_help="Expose AWS resources")
+@click.command(name="expose", short_help="Surgically expose resources by modifying resource policies to include backdoors to a rogue attacker-controlled IAM principal or to the internet.")
 @click.option(
     "--name",
     "-n",
@@ -98,7 +98,7 @@ CBLINK2 = '\33[6m'
 )
 def expose(name, evil_principal, profile, service, region, dry_run, undo, cloak, verbosity):
     """
-    Expose AWS resources
+    Surgically expose resources by modifying resource policies to include backdoors to a rogue attacker-controlled IAM principal or to the internet.
 
     :param name: The name of the AWS resource.
     :param evil_principal: The ARN of the evil principal to give access to the resource.

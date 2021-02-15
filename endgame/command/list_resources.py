@@ -16,7 +16,7 @@ from endgame.shared import utils, constants
 logger = logging.getLogger(__name__)
 
 
-@click.command(name="list-resources", short_help="List exposable resources.")
+@click.command(name="list-resources", short_help="List all resources that can be exposed via Endgame.")
 @click.option(
     "--service",
     "-s",

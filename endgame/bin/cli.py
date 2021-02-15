@@ -8,7 +8,7 @@ from endgame.bin.version import __version__
 @click.version_option(version=__version__)
 def endgame():
     """
-    Expose AWS resources automagically
+    An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or to the entire internet 😈
     """
 
 
@@ -18,7 +18,7 @@ endgame.add_command(command.smash.smash)
 
 
 def main():
-    """Expose AWS resources automagically"""
+    """An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or to the entire internet 😈"""
     endgame()
 
 

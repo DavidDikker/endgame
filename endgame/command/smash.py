@@ -115,7 +115,6 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclud
         principal_name = get_resource_path_from_arn(evil_principal)
     results = []
     if service == "all":
-        # TODO: Big scary warning message and confirmation
         results = get_all_resources_for_all_services(profile=profile, region=region,
                                                      current_account_id=current_account_id, cloak=cloak)
     else:

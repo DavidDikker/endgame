@@ -115,6 +115,13 @@ eval "$(_ENDGAME_COMPLETE=source_zsh endgame)"
 
 # Tutorial
 
+The prerequisite for an attacker running Endgame is they have access to AWS API credentials for the victim account which have privileges to update resource policies.
+
+Endgame can run in two modes, `expose` or ```smash`. The less-destructive `expose` mode is surgical, updating the resource policy on a single attacker-defined resource to include a back door to a principal they control (or the internet if they're mean).
+
+`smash`, on the other hand, is more destructive (and louder). `smash` can run on a single service or all supported services. In either case, for each service it enumerates a list of resources in that region, reads the current resource policy on each, and applies a new policy which includes the "evil principal" the attacker has specified. The net effect of this is that depending on the privileges they have in the victim account, an attacker can insert dozens of back doors which are not controlled by the victim's IAM policies.
+
+
 ## Step 1: Setup
 
 * First, authenticate to AWS CLI using credentials to the victim's account.

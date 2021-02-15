@@ -25,7 +25,7 @@ setuptools.setup(
     version=get_version(),
     author="Kinnaird McQuade",
     author_email="kinnairdm@gmail.com",
-    description="Expose AWS resources automagically",
+    description="An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or to the entire internet 😈",
     long_description=get_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/salesforce/endgame",
