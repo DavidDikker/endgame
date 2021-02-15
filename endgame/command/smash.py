@@ -12,7 +12,7 @@ from endgame import set_log_level
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
 from endgame.shared.validate import click_validate_supported_aws_service, click_validate_user_or_principal_arn, click_validate_comma_separated_resource_names
 from endgame.shared import utils, constants, scary_warnings
-from endgame.command.list_resources import get_all_resources_for_all_services, list_resources_by_service
+from endgame.shared.resource_results import ResourceResults
 from endgame.command.expose import expose_service
 from endgame.shared.response_message import ResponseMessage
 
@@ -53,7 +53,7 @@ END = "\033[0m"
     type=str,
     required=False,
     default="us-east-1",
-    help="The AWS region",
+    help="The AWS region. Set to 'all' to iterate through all regions.",
     envvar="AWS_REGION"
 )
 @click.option(
@@ -88,18 +88,26 @@ END = "\033[0m"
     callback=click_validate_comma_separated_resource_names
 )
 @click.option(
+    "--excluded-services",
+    type=str,
+    default="",
+    help="A comma-separated list of services to exclude from results",
+    envvar="EXCLUDED_SERVICES",
+    callback=click_validate_comma_separated_resource_names
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",
     count=True,
 )
-def smash(service, evil_principal, profile, region, dry_run, undo, cloak, excluded_names, verbosity):
+def smash(service, evil_principal, profile, region, dry_run, undo, cloak, excluded_names, excluded_services, verbosity):
     """
     Smash your AWS Account to pieces by exposing massive amounts of resources to a rogue principal or to the internet
     """
     set_log_level(verbosity)
     # Get the current account ID
-    sts_client = get_boto3_client(profile=profile, service="sts", region=region, cloak=cloak)
+    sts_client = get_boto3_client(profile=profile, service="sts", region="us-east-1", cloak=cloak)
     current_account_id = get_current_account_id(sts_client=sts_client)
     if evil_principal.strip('"').strip("'") == "*":
         if not scary_warnings.confirm_anonymous_principal():
@@ -114,15 +122,27 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclud
         principal_type = parse_arn_for_resource_type(evil_principal)
         principal_name = get_resource_path_from_arn(evil_principal)
     results = []
-    if service == "all":
-        results = get_all_resources_for_all_services(profile=profile, region=region,
-                                                     current_account_id=current_account_id, cloak=cloak)
+    user_provided_service = service
+    if user_provided_service == "all" and region == "all":
+        utils.print_red("--service all and --region all detected; listing all resources across all services in the "
+                        "account. This might take a while - about 5 minutes.")
+    elif region == "all":
+        logger.debug("'--region all' selected; listing resources across the entire account, so this might take a while")
     else:
-        translated_service = utils.get_service_translation(provided_service=service)
-        client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
-        result = list_resources_by_service(provided_service=service, region=region,
-                                           current_account_id=current_account_id, client=client)
-        results.extend(result.resources)
+        pass
+    if user_provided_service == "all":
+        logger.debug("'--service all' selected; listing resources in ARN format to differentiate between services")
+
+    resource_results = ResourceResults(
+        user_provided_service=user_provided_service,
+        user_provided_region=region,
+        current_account_id=current_account_id,
+        profile=profile,
+        cloak=cloak,
+        excluded_names=excluded_names,
+        excluded_services=excluded_services
+    )
+    results = resource_results.resources
 
     if undo and not dry_run:
         utils.print_green("UNDO BACKDOOR:")
@@ -135,10 +155,10 @@ def smash(service, evil_principal, profile, region, dry_run, undo, cloak, exclud
 
     for resource in results:
         if resource.name not in excluded_names:
+            # feed the name, region, and translated_service based on what it is for each resource
             name = resource.name
             region = resource.region
             translated_service = utils.get_service_translation(provided_service=resource.service)
-            # client = None
             client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
             response_message = smash_resource(service=resource.service, region=region, name=name,
                                               current_account_id=current_account_id,
@@ -169,4 +189,3 @@ def smash_resource(
                                       current_account_id=current_account_id,
                                       client=client, undo=undo, dry_run=dry_run, evil_principal=evil_principal)
     return response_message
-    

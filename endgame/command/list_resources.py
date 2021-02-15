@@ -3,15 +3,12 @@ List exposable resources
 """
 import logging
 import click
-import boto3
 from endgame import set_log_level
-from endgame.exposure_via_resource_policies import glacier_vault, sqs, lambda_layer, lambda_function, kms, \
-    cloudwatch_logs, efs, s3,  sns, iam, ecr, secrets_manager, ses, elasticsearch, acm_pca
-from endgame.exposure_via_sharing_apis import rds_snapshots, ebs_snapshots, ec2_amis
 from endgame.shared.aws_login import get_boto3_client, get_current_account_id
-from endgame.shared.validate import click_validate_supported_aws_service, click_validate_comma_separated_resource_names
-from endgame.shared.list_resources_response import ListResourcesResponse
-from endgame.shared import utils, constants
+from endgame.shared.validate import click_validate_supported_aws_service, click_validate_comma_separated_resource_names, \
+    click_validate_comma_separated_excluded_services
+from endgame.shared.resource_results import ResourceResults
+from endgame.shared import constants
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +36,7 @@ logger = logging.getLogger(__name__)
     type=str,
     required=False,
     default="us-east-1",
-    help="The AWS region",
+    help="The AWS region. Set to 'all' to iterate through all regions.",
     envvar="AWS_REGION"
 )
 @click.option(
@@ -60,41 +57,58 @@ logger = logging.getLogger(__name__)
     callback=click_validate_comma_separated_resource_names
 )
 @click.option(
+    "--excluded-services",
+    type=str,
+    default="",
+    help="A comma-separated list of services to exclude from results",
+    envvar="EXCLUDED_SERVICES",
+    callback=click_validate_comma_separated_resource_names
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",
     count=True,
 )
-def list_resources(service, profile, region, cloak, excluded_names, verbosity):
+def list_resources(service, profile, region, cloak, excluded_names, excluded_services, verbosity):
     """
     List AWS resources to expose.
     """
 
     set_log_level(verbosity)
 
-    resources = []
     # User-supplied arguments like `cloudwatch` need to be translated to the IAM name like `logs`
-    provided_service = service
-
-    results = []
+    user_provided_service = service
     # Get the boto3 clients
-    sts_client = get_boto3_client(profile=profile, service="sts", region=region, cloak=cloak)
+    sts_client = get_boto3_client(profile=profile, service="sts", region="us-east-1", cloak=cloak)
     current_account_id = get_current_account_id(sts_client=sts_client)
-    if provided_service == "all":
-        results = get_all_resources_for_all_services(profile=profile, region=region, current_account_id=current_account_id, cloak=cloak)
+    if user_provided_service == "all" and region == "all":
+        logger.critical("'--service all' and '--region all' detected; listing all resources across all services in the "
+                        "account. This might take a while - about 5 minutes.")
+    elif region == "all":
+        logger.debug("'--region all' selected; listing resources across the entire account, so this might take a while")
     else:
-        translated_service = utils.get_service_translation(provided_service=provided_service)
-        client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
-        result = list_resources_by_service(provided_service=service, region=region,
-                                           current_account_id=current_account_id, client=client)
-        results.extend(result.resources)
+        pass
+    if user_provided_service == "all":
+        logger.debug("'--service all' selected; listing resources in ARN format to differentiate between services")
+
+    resource_results = ResourceResults(
+        user_provided_service=user_provided_service,
+        user_provided_region=region,
+        current_account_id=current_account_id,
+        profile=profile,
+        cloak=cloak,
+        excluded_names=excluded_names,
+        excluded_services=excluded_services
+    )
+    results = resource_results.resources
 
     # Print the results
     if len(results) == 0:
         logger.warning("There are no resources given the criteria provided.")
     else:
         # If you provide --service all, then we will list the ARNs to differentiate services
-        if provided_service == "all":
+        if user_provided_service == "all":
             logger.debug("'--service all' selected; listing resources in ARN format to differentiate between services")
             for resource in results:
                 if resource.name not in excluded_names:
@@ -108,79 +122,3 @@ def list_resources(service, profile, region, cloak, excluded_names, verbosity):
                     print(resource.name)
                 else:
                     logger.debug(f"Excluded: {resource.name}")
-
-
-def get_all_resources_for_all_services(profile: str, region: str, current_account_id: str, cloak: bool = False):
-    results = []
-    for supported_service in constants.SUPPORTED_AWS_SERVICES:
-        if supported_service != "all":
-            translated_service = utils.get_service_translation(provided_service=supported_service)
-            result = get_all_resources(translated_service=translated_service, provided_service=supported_service,
-                                       profile=profile, region=region, current_account_id=current_account_id, cloak=cloak)
-            if result:
-                results.extend(result)
-    return results
-
-
-def get_all_resources(translated_service: str, profile: str, provided_service: str, region: str,
-                      current_account_id: str, cloak: bool = False) -> [ListResourcesResponse]:
-    """Get resource objects for every resource under an AWS service"""
-    results = []
-    client = get_boto3_client(profile=profile, service=translated_service, region=region, cloak=cloak)
-    result = list_resources_by_service(provided_service=provided_service, region=region,
-                                       current_account_id=current_account_id, client=client)
-    if result:
-        if result.resources:
-            results.extend(result.resources)
-    return results
-
-
-def list_resources_by_service(
-        provided_service: str,
-        region: str,
-        current_account_id: str,
-        client: boto3.Session.client,
-):
-    resources = None
-
-    if provided_service == "acm-pca":
-        resources = acm_pca.AcmPrivateCertificateAuthorities(client=client, current_account_id=current_account_id,
-                                                             region=region)
-    elif provided_service == "ecr":
-        resources = ecr.EcrRepositories(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "efs":
-        resources = efs.ElasticFileSystems(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "elasticsearch":
-        resources = elasticsearch.ElasticSearchDomains(client=client, current_account_id=current_account_id,
-                                                       region=region)
-    elif provided_service == "glacier":
-        resources = glacier_vault.GlacierVaults(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "iam":
-        resources = iam.IAMRoles(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "kms":
-        resources = kms.KmsKeys(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "lambda":
-        resources = lambda_function.LambdaFunctions(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "lambda-layer":
-        resources = lambda_layer.LambdaLayers(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "cloudwatch":
-        resources = cloudwatch_logs.CloudwatchResourcePolicies(client=client, current_account_id=current_account_id,
-                                                               region=region)
-    elif provided_service == "s3":
-        resources = s3.S3Buckets(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "ses":
-        resources = ses.SesIdentityPolicies(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "sns":
-        resources = sns.SnsTopics(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "sqs":
-        resources = sqs.SqsQueues(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "secretsmanager":
-        resources = secrets_manager.SecretsManagerSecrets(client=client, current_account_id=current_account_id,
-                                                          region=region)
-    elif provided_service == "rds":
-        resources = rds_snapshots.RdsSnapshots(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "ebs":
-        resources = ebs_snapshots.EbsSnapshots(client=client, current_account_id=current_account_id, region=region)
-    elif provided_service == "ec2-ami":
-        resources = ec2_amis.Ec2Images(client=client, current_account_id=current_account_id, region=region)
-    return resources
