@@ -12,3 +12,4 @@ mkdocs==1.1.2
 mkdocs-material==6.2.8
 mkdocs-material-extensions==1.0.1
 mkdocstrings==0.14.0
+rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
