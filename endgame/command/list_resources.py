@@ -83,8 +83,8 @@ def list_resources(service, profile, region, cloak, excluded_names, excluded_ser
     sts_client = get_boto3_client(profile=profile, service="sts", region="us-east-1", cloak=cloak)
     current_account_id = get_current_account_id(sts_client=sts_client)
     if user_provided_service == "all" and region == "all":
-        logger.warning("--service all and --region all detected; listing all resources across all services in the "
-                       "account. This might take a while - about 5 minutes.")
+        logger.critical("'--service all' and '--region all' detected; listing all resources across all services in the "
+                        "account. This might take a while - about 5 minutes.")
     elif region == "all":
         logger.debug("'--region all' selected; listing resources across the entire account, so this might take a while")
     else:
