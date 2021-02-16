@@ -67,7 +67,7 @@ CBLINK2 = '\33[6m'
     required=False,
     default="us-east-1",
     help="The AWS region",
-    envvar="AWS_SERVICE"
+    envvar="AWS_REGION"
 )
 @click.option(
     "--dry-run",
