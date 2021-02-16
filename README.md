@@ -12,11 +12,11 @@ An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS a
   <img src="docs/images/endgame.gif">
 </p>
 
-**TLDR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire internet.
+**TL;DR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire Internet.
 
 # Endgame: Creating Backdoors in AWS
 
-Endgame abuses AWS's resource permission model to grant rogue users (or the internet) access to an AWS account's resources with a single command. It does this through one of three methods:
+Endgame abuses AWS's resource permission model to grant rogue users (or the Internet) access to an AWS account's resources with a single command. It does this through one of three methods:
 1. Modifying [resource-based policies](https://endgame.readthedocs.io/en/latest/resource-policy-primer/) (such as [S3 Bucket policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteAccessPermissionsReqd.html#bucket-policy-static-site) or [Lambda Function policies](https://docs.aws.amazon.com/lambda/latest/dg/access-control-resource-based.html#permissions-resource-xaccountinvoke))
 2. Resources that can be made public through sharing APIs (such as [Amazon Machine Images (AMIs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/sharingamis-explicit.html), [EBS disk snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html), and [RDS database snapshots](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ShareSnapshot.html))
 3. Sharing resources via [AWS Resource Access Manager (RAM)](https://docs.aws.amazon.com/ram/latest/userguide/shareable.html)
@@ -26,7 +26,7 @@ Endgame was created to:
 * Show [blue teams](https://endgame.readthedocs.io/en/latest/recommendations-to-blue-teams/) and developers what kind of damage can be done by overprivileged/leaked accounts.
 * Help red teams to demonstrate impact of their access.
 
-Endgame demonstrates (with a bit of shock and awe) how simple human errors in excessive permissions (such a granting `s3:*` access instead of `s3:GetObject`) can be abused by attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves. This is what inspired us to write this tool. Follow the [Tutorial](#tutorial) and observe how you can expose resources across **17 different AWS services** to the internet in a matter of seconds.
+Endgame demonstrates (with a bit of shock and awe) how simple human errors in excessive permissions (such a granting `s3:*` access instead of `s3:GetObject`) can be abused by attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves. This is what inspired us to write this tool. Follow the [Tutorial](#tutorial) and observe how you can expose resources across **17 different AWS services** to the Internet in a matter of seconds.
 
 The resource types that can be exposed are of high value to attackers. This can include:
 * Privileged compute access (by exposing who can invoke `lambda` functions)
@@ -37,7 +37,7 @@ The resource types that can be exposed are of high value to attackers. This can 
 * Logging endpoints (`cloudwatch` resource policies)
 * Search and analytics engines (`elasticsearch` clusters)
 
-Endgame is an attack tool, but it was written with a specific purpose. We wrote this tool with desired outcomes for the following audiences:
+Endgame is an attack tool, but it was written with a specific purpose. We wrote this tool for the following audiences:
 1. **AWS**: We want AWS to empower their customers with the capabilities to fight these attacks. Our recommendations are outlined in the [Recommendations to AWS](#recommendations-to-aws) section.
 2. **AWS Customers and their customers**: It is better to have risks be more easily understood and know how to mitigate those risks than to force people to fight something novel. By increasing awareness about Resource Exposure and excessive permissions, we can protect ourselves against attacks where the attackers previously held the advantage and AWS customers were previously left blind.
 3. **Blue Teams**: Defense teams can leverage the guidance around user-agent detection, API call detection, and behavioral detection outlined in the [Recommendations to Blue Teams](#recommendations-to-blue-teams) section.
@@ -49,7 +49,7 @@ Endgame can create backdoors for resources in any of the services listed in the 
 
 Note: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that Endgame attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using Endgame. 😊
 
-| Backdoor Resource Type                                  | Support | [AWS Access Analyzer Support][1] |
+| Backdoor Resource Type                                  | Endgame | [AWS Access Analyzer Support][1] |
 |---------------------------------------------------------|---------|----------------------------------|
 | [ACM Private CAs](https://endgame.readthedocs.io/en/latest/risks/acm-pca/)                | ✅     | ❌                               |
 | [CloudWatch Resource Policies](https://endgame.readthedocs.io/en/latest/risks/logs/)      | ✅     | ❌                               |
@@ -112,7 +112,7 @@ brew tap salesforce/endgame https://github.com/salesforce/endgame
 brew install endgame
 ```
 
-Now you should be able to execute Endgame from command line by running `endgame --help`.
+Now you should be able to execute Endgame from the command line by running `endgame --help`.
 
 ### Shell Completion
 
@@ -128,11 +128,20 @@ eval "$(_ENDGAME_COMPLETE=source endgame)"
 eval "$(_ENDGAME_COMPLETE=source_zsh endgame)"
 ```
 
+# Tutorial
+
+The prerequisite for an attacker running Endgame is that they have access to AWS API credentials for the victim account which have privileges to update resource policies.
+
+Endgame can run in two modes, `expose` or `smash`. The less-destructive `expose` mode is surgical, updating the resource policy on a single attacker-defined resource to include a back door to a principal they control (or the Internet if they're mean).
+
+`smash`, on the other hand, is more destructive (and louder). `smash` can run on a single service or all supported services. In either case, for each service it enumerates a list of resources in that region, reads the current resource policy on each, and applies a new policy which includes the "evil principal" the attacker has specified. The net effect of this is that depending on the privileges they have in the victim account, an attacker can insert dozens of back doors which are not controlled by the victim's IAM policies.
+
+
 ## Step 1: Setup
 
 * First, authenticate to AWS CLI using credentials to the victim's account.
 
-* Set the environment variables for `EVIL_PRINCIPAL` (required). Optionally, set the environment variables for `AWS_REGION` and `AWS_PROFILE`
+* Set the environment variables for `EVIL_PRINCIPAL` (required). Optionally, set the environment variables for `AWS_REGION` and `AWS_PROFILE`.
 
 ```bash
 # Set `EVIL_PRINCIPAL` environment variable to the rogue IAM User or 
