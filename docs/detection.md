@@ -8,8 +8,6 @@ There are three general methods that blue teams can use to **detect** AWS Resour
 
 While (1) User Agent Detection is specific to the usage of Endgame, (2) API Call Detection, (3) Behavioral-based detection, and (4) AWS Access Analyzer are strategies to detect Resource Exposure Attacks, regardless of if the attacker is using Endgame to do it.
 
-AWS Access Analyzer helps, but will not
-
 ## Detecting Resource Exposure Attacks
 
 ### API Call Detection
