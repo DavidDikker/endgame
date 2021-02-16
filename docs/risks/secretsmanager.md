@@ -84,15 +84,16 @@ aws secretsmanager get-secret-value --secret-id $VICTIM_RESOURCE
 
 ## Remediation
 
+* **Leverage Strong Resource-based Policies**: Follow the resource-based policy recommendations in the [Prevention Guide](https://endgame.readthedocs.io/en/latest/prevention/#leverage-strong-resource-based-policies)
 * **Trusted Accounts Only**: Ensure that Secrets Manager secrets are only shared with trusted accounts, and that the trusted accounts truly need access to the secret.
 * **Ensure access is necessary**: For any trusted accounts that do have access, ensure that the access is absolutely necessary.
 * **AWS Access Analyzer**: Leverage AWS Access Analyzer to report on external access to Secrets Manager secrets. See [the AWS Access Analyzer documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-secrets-manager) for more details.
 * **Restrict access to IAM permissions that could lead to exposure of your Secrets**: Tightly control access to the following IAM actions:
-  - [secretsmanager:PutResourcePolicy](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_PutResourcePolicy.html): _Enables the user to attach a resource policy to a secret._
-  - [secretsmanager:GetSecretValue](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html): _Enables the user to retrieve and decrypt the encrypted data._
-  - [secretsmanager:DeleteResourcePolicy](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_DeleteResourcePolicy.html): _Enables the user to delete the resource policy attached to a secret._
-  - [secretsmanager:GetResourcePolicy](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetResourcePolicy.html): _Enables the user to get the resource policy attached to a secret._
-  - [secretsmanager:ListSecrets](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_ListSecrets.html): _Enables the user to list the available secrets._
+      - [secretsmanager:PutResourcePolicy](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_PutResourcePolicy.html): _Enables the user to attach a resource policy to a secret._
+      - [secretsmanager:GetSecretValue](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html): _Enables the user to retrieve and decrypt the encrypted data._
+      - [secretsmanager:DeleteResourcePolicy](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_DeleteResourcePolicy.html): _Enables the user to delete the resource policy attached to a secret._
+      - [secretsmanager:GetResourcePolicy](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetResourcePolicy.html): _Enables the user to get the resource policy attached to a secret._
+      - [secretsmanager:ListSecrets](https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_ListSecrets.html): _Enables the user to list the available secrets._
 
 Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure activities. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 

@@ -72,11 +72,11 @@ The policy below allows the Evil Principal (`arn:aws:iam::999988887777:user/evil
 * **Trusted Accounts Only**: Ensure that SES Authorization Policies only authorize specific delegate senders according to your design.
 * **Ensure access is necessary**: For any delegate senders that do have access, ensure that the access is absolutely necessary.
 * **Restrict access to IAM permissions that could lead to manipulation of your SES Sender Authorization Policies**: Tightly control access to the following IAM actions:
-  - [ses:PutIdentityPolicy](https://docs.aws.amazon.com/ses/latest/APIReference/API_PutIdentityPolicy.html): _Adds or updates a sending authorization policy for the specified identity (an email address or a domain)_
-  - [ses:DeleteIdentityPolicy](https://docs.aws.amazon.com/ses/latest/APIReference/API_DeleteIdentityPolicy.html): _Deletes the policy associated with the identity_
-  - [ses:GetIdentityPolicies](https://docs.aws.amazon.com/ses/latest/APIReference/API_GetIdentityPolicies.html): _Returns the requested sending authorization policies for the given identity (an email address or a domain)_
-  - [ses:ListIdentities](https://docs.aws.amazon.com/ses/latest/APIReference/API_ListIdentities.html): _Returns a list containing all of the identities (email addresses and domains) for your AWS account, regardless of verification status	_
-  - [ses:ListIdentityPolicies](https://docs.aws.amazon.com/ses/latest/APIReference/API_ListIdentityPolicies.html): _Returns a list of sending authorization policies that are attached to the given identity (an email address or a domain)_
+      - [ses:PutIdentityPolicy](https://docs.aws.amazon.com/ses/latest/APIReference/API_PutIdentityPolicy.html): _Adds or updates a sending authorization policy for the specified identity (an email address or a domain)_
+      - [ses:DeleteIdentityPolicy](https://docs.aws.amazon.com/ses/latest/APIReference/API_DeleteIdentityPolicy.html): _Deletes the policy associated with the identity_
+      - [ses:GetIdentityPolicies](https://docs.aws.amazon.com/ses/latest/APIReference/API_GetIdentityPolicies.html): _Returns the requested sending authorization policies for the given identity (an email address or a domain)_
+      - [ses:ListIdentities](https://docs.aws.amazon.com/ses/latest/APIReference/API_ListIdentities.html): _Returns a list containing all of the identities (email addresses and domains) for your AWS account, regardless of verification status	_
+      - [ses:ListIdentityPolicies](https://docs.aws.amazon.com/ses/latest/APIReference/API_ListIdentityPolicies.html): _Returns a list of sending authorization policies that are attached to the given identity (an email address or a domain)_
 
 Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure activities. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 

@@ -1,6 +1,6 @@
 # Endgame
 
-An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or to the entire Internet 😈
+An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or share the resources with the entire internet 😈
 
 [![continuous-integration](https://github.com/salesforce/endgame/workflows/continuous-integration/badge.svg?)](https://github.com/salesforce/endgame/actions?query=workflow%3Acontinuous-integration)
 [![Documentation Status](https://readthedocs.org/projects/endgame/badge/?version=latest)](https://endgame.readthedocs.io/en/latest/?badge=latest)
@@ -12,7 +12,7 @@ An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS a
   <img src="docs/images/endgame.gif">
 </p>
 
-**TL;DR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire Internet.
+**TL;DR**: `endgame smash --service all` to create backdoors across your entire AWS account - by sharing resources either with a rogue IAM user/role or with the entire Internet.
 
 # Endgame: Creating Backdoors in AWS
 
@@ -23,7 +23,7 @@ Endgame abuses AWS's resource permission model to grant rogue users (or the Inte
 
 Endgame was created to:
 * Push [AWS](https://endgame.readthedocs.io/en/latest/recommendations-to-aws/) to improve coverage of AWS Access Analyzer so AWS users can protect themselves.
-* Show [blue teams](https://endgame.readthedocs.io/en/latest/recommendations-to-blue-teams/) and developers what kind of damage can be done by overprivileged/leaked accounts.
+* Show [blue teams](#recommendations-to-blue-teams) and developers what kind of damage can be done by overprivileged/leaked accounts.
 * Help red teams to demonstrate impact of their access.
 
 Endgame demonstrates (with a bit of shock and awe) how simple human errors in excessive permissions (such a granting `s3:*` access instead of `s3:GetObject`) can be abused by attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves. This is what inspired us to write this tool. Follow the [Tutorial](#tutorial) and observe how you can expose resources across **17 different AWS services** to the Internet in a matter of seconds.
@@ -112,7 +112,7 @@ brew tap salesforce/endgame https://github.com/salesforce/endgame
 brew install endgame
 ```
 
-Now you should be able to execute Endgame from the command line by running `endgame --help`.
+Now you should be able to execute Endgame from command line by running `endgame --help`.
 
 ### Shell Completion
 
@@ -127,15 +127,6 @@ eval "$(_ENDGAME_COMPLETE=source endgame)"
 ```bash
 eval "$(_ENDGAME_COMPLETE=source_zsh endgame)"
 ```
-
-# Tutorial
-
-The prerequisite for an attacker running Endgame is that they have access to AWS API credentials for the victim account which have privileges to update resource policies.
-
-Endgame can run in two modes, `expose` or `smash`. The less-destructive `expose` mode is surgical, updating the resource policy on a single attacker-defined resource to include a back door to a principal they control (or the Internet if they're mean).
-
-`smash`, on the other hand, is more destructive (and louder). `smash` can run on a single service or all supported services. In either case, for each service it enumerates a list of resources in that region, reads the current resource policy on each, and applies a new policy which includes the "evil principal" the attacker has specified. The net effect of this is that depending on the privileges they have in the victim account, an attacker can insert dozens of back doors which are not controlled by the victim's IAM policies.
-
 
 ## Step 1: Setup
 
@@ -245,44 +236,40 @@ While [Cloudsplaining](https://opensource.salesforce.com/cloudsplaining/) (a Sal
 
 At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html) does **NOT** support auditing **11 out of the 18 services** that Endgame attacks. Given that Access Analyzer is intended to detect this exact kind of violation, we kindly suggest to the AWS Team that they support all resources that can be attacked using Endgame. 😊
 
-The lack of preventative tooling makes this issue more difficult for customers. Ideally, customers should be able to say, "Nobody in my AWS Organization is allowed to share **any** resources that can be exposed by Endgame outside of the organization, unless that resource is in an exemption list." This **should** be possible, but it is not. It is not even possible to use [AWS Service Control Policies (SCPS)](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html) - AWS's preventative guardrails service - to prevent `sts:AssumeRole` calls from outside your AWS Organization. The current SCP service limit of 5 SCPs per AWS account compounds this problem.
+The lack of preventative tooling makes this issue more difficult for customers. Ideally, customers should be able to say, _"Nobody in my AWS Organization is allowed to share **any** resources that can be exposed by Endgame outside of the organization, unless that resource is in an exemption list."_ This **should** be possible, but it is not. It is not even possible to use [AWS Service Control Policies (SCPS)](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html) - AWS's preventative guardrails service - to prevent `sts:AssumeRole` calls from outside your AWS Organization. The current SCP service limit of 5 SCPs per AWS account compounds this problem.
 
 We recommend that AWS take the following measures in response:
-* Increase Access Advisor Support to cover the resources that can be exposed via Resource-based Policy modification, AWS RAM resource sharing, and resource-specific sharing APIs (such as RDS snapshots, EBS snapshots, and EC2 AMIs)
+* Increase Access Analyzer Support to cover the resources that can be exposed via Resource-based Policy modification, AWS RAM resource sharing, and resource-specific sharing APIs (such as RDS snapshots, EBS snapshots, and EC2 AMIs)
 * Create GuardDuty rules that detect anomalous exposure of resources outside your AWS Organization.
 * Expand the current limit of 5 SCPs per AWS account to 200. (for comparison, the Azure equivalent - Azure Policies - has a limit of [200 Policy or Initiative Assignments per subscription](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-policy-limits))
 * Improve the AWS SCP service to support an "Audit" mode that would record in CloudTrail whether API calls would have been denied had the SCP not been in audit mode. This would increase customer adoption and make it easier for customers to both pilot and roll out new guardrails. (for comparison, the Azure Equivalent - Azure Policies - already [supports Audit mode](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/effects#audit).
 * Support the usage of `sts:AssumeRole` to prevent calls from outside your AWS Organization, with targeted exceptions.
+* Add IAM Condition Keys to all the IAM Actions that are used to perform Resource Exposure. These IAM Condition Keys should be used to prevent these resources from (1) being shared with the public **and** (2) being shared outside of your `aws:PrincipalOrgPath`.
 
 ## Recommendations to Blue Teams
 
-There are three general methods that blue teams can use to detect the usage of this tool:
-1. User Agent Detection
-2. API call detection
-3. Behavioral-based detection
+### Detection
 
-#### User Agent Detection
+There are three general methods that blue teams can use to **detect** AWS Resource Exposure Attacks. See the links below for more detailed guidance per method.
+1. [User Agent Detection (Endgame specific)](https://endgame.readthedocs.io/en/latest/detection/#user-agent-detection)
+2. [API call detection](https://endgame.readthedocs.io/en/latest/detection/#api-call-detection)
+3. [Behavioral-based detection](https://endgame.readthedocs.io/en/latest/detection/#behavioral-based-detection)
+4. [AWS Access Analyzer](https://endgame.readthedocs.io/en/latest/detection/#aws-access-analyzer)
 
-Endgame uses the user agent `HotDogsAreSandwiches` by default. While this can be overriden using the `--cloak` flag, defense teams can still use it as an IOC.
+While (1) User Agent Detection is specific to the usage of Endgame, (2) API Call Detection, (3) Behavioral-based detection, and (4) AWS Access Analyzer are strategies to detect Resource Exposure Attacks, regardless of if the attacker is using Endgame to do it.
 
-The following CloudWatch Insights query will expose events with the `HotDogsAreSandwiches` user agent in CloudTrail logs:
+### Prevention
 
-```
-fields eventTime, eventSource, eventName, userIdentity.arn, userAgent 
-| filter userAgent='HotDogsAreSandwiches'
-```
+There are 6 general methods that blue teams can use to **prevent** AWS Resource Exposure Attacks. See the links below for more detailed guidance per method.
 
-This query assumes that your CloudTrail logs are being sent to CloudWatch and that you have selected the correct log group.
+1. [Use AWS KMS Customer-Managed Keys to encrypt resources](https://endgame.readthedocs.io/en/latest/prevention/#use-aws-kms-customer-managed-keys)
+2. [Leverage Strong Resource-based policies](https://endgame.readthedocs.io/en/latest/prevention/#leverage-strong-resource-based-policies)
+3. [Trusted Accounts Only](https://endgame.readthedocs.io/en/latest/prevention/#trusted-accounts-only)
+4. [Inventory which IAM Principals are capable of Resource Exposure](https://endgame.readthedocs.io/en/latest/prevention/#inventory-which-iam-principals-are-capable-of-resource-exposure)
+5. [AWS Service Control Policies](https://endgame.readthedocs.io/en/latest/prevention/#aws-service-control-policies)
+6. [Prevent AWS RAM External Principals](https://endgame.readthedocs.io/en/latest/prevention/#prevent-aws-ram-external-principals)
 
-#### API Call Detection
-
-Further documentation on how to query for specific API calls made to each service by endgame is available in the [risks documentation](docs/risks).
-
-#### Behavioral-based detection
-
-Behavioral-based detection is currently being researched and developed by [Ryan Stalets](https://twitter.com/RyanStalets). [GitHub issue #46](https://github.com/salesforce/endgame/issues/46) is being used to track this work. We welcome all contributions and discussion!
-
-#### Further Blue Team Reading
+### Further Blue Team Reading
 
 Additional information on AWS resource policies, how this tool works in the victim account, and identification/containment suggestions is [here](docs/resource-policy-primer.md).
 
@@ -439,6 +426,7 @@ Note that the `expose` command will not expose the resources to the world - it w
 
 # References
 
+* [Example Splunk Dashboard for AWS Resource Exposure](https://kmcquade.github.io/rick/)
 * [AWS Access Analyzer Supported Resources](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html)
 * [AWS Exposable Resources](https://github.com/SummitRoute/aws_exposable_resources)
 * [Moto: A library that allows you to easily mock out tests based on AWS Infrastructure](http://docs.getmoto.org/en/latest/docs/moto_apis.html)

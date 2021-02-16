@@ -89,11 +89,11 @@ aws lambda invoke --function-name $VICTIM_LAMBDA
 * **Ensure access is necessary**: For any trusted accounts that do have access, ensure that the access is absolutely necessary.
 * **AWS Access Analyzer**: Leverage AWS Access Analyzer to report on external access to Lambda Functions. See [the AWS Access Analyzer documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-resources.html#access-analyzer-lambda) for more details.
 * **Restrict access to IAM permissions that could lead to exposure of your Lambda Functions**: Tightly control access to the following IAM actions:
-  - [lambda:AddPermission](https://docs.aws.amazon.com/lambda/latest/dg/API_AddPermission.html): _Grants permission to give an AWS service or another account permission to use an AWS Lambda function_
-  - [lambda:GetPolicy](https://docs.aws.amazon.com/lambda/latest/dg/API_GetPolicy.html): _Grants permission to view the resource-based policy for an AWS Lambda function, version, or alias_
-  - [lambda:InvokeFunction](https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html): _Grants permission to invoke an AWS Lambda function_
-  - [lambda:ListFunctions](https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html): _Grants permission to retrieve a list of AWS Lambda functions, with the version-specific configuration of each function_
-  - [lambda:RemovePermission](https://docs.aws.amazon.com/lambda/latest/dg/API_RemovePermission.html): _Grants permission to revoke function-use permission from an AWS service or another account_
+      - [lambda:AddPermission](https://docs.aws.amazon.com/lambda/latest/dg/API_AddPermission.html): _Grants permission to give an AWS service or another account permission to use an AWS Lambda function_
+      - [lambda:GetPolicy](https://docs.aws.amazon.com/lambda/latest/dg/API_GetPolicy.html): _Grants permission to view the resource-based policy for an AWS Lambda function, version, or alias_
+      - [lambda:InvokeFunction](https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html): _Grants permission to invoke an AWS Lambda function_
+      - [lambda:ListFunctions](https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html): _Grants permission to retrieve a list of AWS Lambda functions, with the version-specific configuration of each function_
+      - [lambda:RemovePermission](https://docs.aws.amazon.com/lambda/latest/dg/API_RemovePermission.html): _Grants permission to revoke function-use permission from an AWS service or another account_
 
 Also, consider using [Cloudsplaining](https://github.com/salesforce/cloudsplaining/#cloudsplaining) to identify violations of least privilege in IAM policies. This can help limit the IAM principals that have access to the actions that could perform Resource Exposure. See the example report [here](https://opensource.salesforce.com/cloudsplaining/)
 

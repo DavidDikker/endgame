@@ -22,10 +22,10 @@ nav:
   - Home: 'index.md'
   - Installation: 'installation.md'
   - Tutorial: 'tutorial.md'
-  - Permissions: 'iam-permissions.md'
   - Detection: 'detection.md'
+  - Prevention: 'prevention.md'
   - Recommendations To AWS: 'recommendations-to-aws.md'
-  - Recommendations To Blue Teams: 'recommendations-to-blue-teams.md'
+  - Permissions: 'iam-permissions.md'
 
   - "<b>Backdoor Resource Types</b>":
     - ACM Private CAs: 'risks/acm-pca.md'

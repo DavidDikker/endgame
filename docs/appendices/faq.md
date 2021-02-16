@@ -1,5 +1,15 @@
 # FAQ
 
+## Where does AWS Access Analyzer fall short?
+
+[AWS Access Analyzer](https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html) analyzes new or updated resource-based policies within 30 minutes of policy updates (triggered by CloudTrail log entries), and during periodic scans (every 24 hours). If an attacker leverages the `expose` or `smash` commands but quickly rolls back the changes with `--undo`, you might not find out about the attack with Access Analyzer until 30 minutes later.
+
+However, Access Analyzer can still be especially useful in ensuring that if attacks do gain a foothold in your infrastructure. If the attacker ran Endgame or perform resource exposure attacks without the tool, you can still use Access Analyzer to alert on those changes so you can respond to the issue, instead of allowing a persistent backdoor.
+
+The primary drawback with AWS Access Analyzer is that it does not support 11/17 resource types currently supported by Endgame. It also does not support AWS RAM Resource sharing outside of your trust zone, or resource-specific sharing APIs (such as RDS snapshots, EBS snapshots, and EC2 AMIs).
+
+See the [Recommendations to AWS](../recommendations-to-aws.md) section for more details.
+
 ## Related Tools in the Ecosystem
 
 ### Attack tools
