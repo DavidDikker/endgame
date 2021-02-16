@@ -1,6 +1,7 @@
 # Detection
 
 There are three general methods that blue teams can use to **detect** AWS Resource Exposure Attacks:
+
 1. User Agent Detection (Endgame specific)
 2. API call detection
 3. Behavioral-based detection
