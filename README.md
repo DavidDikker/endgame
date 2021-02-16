@@ -1,6 +1,6 @@
 # Endgame
 
-An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or to the entire internet 😈
+An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or to the entire Internet 😈
 
 [![continuous-integration](https://github.com/salesforce/endgame/workflows/continuous-integration/badge.svg?)](https://github.com/salesforce/endgame/actions?query=workflow%3Acontinuous-integration)
 [![Documentation Status](https://readthedocs.org/projects/endgame/badge/?version=latest)](https://endgame.readthedocs.io/en/latest/?badge=latest)
@@ -12,30 +12,19 @@ An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS a
   <img src="docs/images/endgame.gif">
 </p>
 
-
 **TL;DR**: `endgame smash --service all` to create backdoors across your entire AWS account - either to a rogue IAM user/role or to the entire Internet.
-
-#### Cheatsheet
-
-```bash
-# This will ruin your day
-endgame smash --service all --evil-principal "*"
-# This will show you how your day could have been ruined
-endgame smash --service all --evil-principal "*" --dry-run
-# Atone for your sins
-endgame smash --service all --evil-principal "*" --undo
-# Consider maybe atoning for your sins
-endgame smash --service all --evil-principal "*" --undo --dry-run
-
-# List resources available for exploitation
-endgame list-resources --service all
-# Expose specific resources
-endgame expose --service s3 --name computers-were-a-mistake
-```
 
 # Endgame: Creating Backdoors in AWS
 
-Endgame abuses AWS's resource permission model to grant rogue users (or the Internet) access to an AWS account's resources with a single command.
+Endgame abuses AWS's resource permission model to grant rogue users (or the Internet) access to an AWS account's resources with a single command. It does this through one of three methods:
+1. Modifying [resource-based policies](https://endgame.readthedocs.io/en/latest/resource-policy-primer/) (such as [S3 Bucket policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteAccessPermissionsReqd.html#bucket-policy-static-site) or [Lambda Function policies](https://docs.aws.amazon.com/lambda/latest/dg/access-control-resource-based.html#permissions-resource-xaccountinvoke))
+2. Resources that can be made public through sharing APIs (such as [Amazon Machine Images (AMIs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/sharingamis-explicit.html), [EBS disk snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html), and [RDS database snapshots](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ShareSnapshot.html))
+3. Sharing resources via [AWS Resource Access Manager (RAM)](https://docs.aws.amazon.com/ram/latest/userguide/shareable.html)
+
+Endgame was created to:
+* Push [AWS](https://endgame.readthedocs.io/en/latest/recommendations-to-aws/) to improve coverage of AWS Access Analyzer so AWS users can protect themselves.
+* Show [blue teams](https://endgame.readthedocs.io/en/latest/recommendations-to-blue-teams/) and developers what kind of damage can be done by overprivileged/leaked accounts.
+* Help red teams to demonstrate impact of their access.
 
 Endgame demonstrates (with a bit of shock and awe) how simple human errors in excessive permissions (such a granting `s3:*` access instead of `s3:GetObject`) can be abused by attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves. This is what inspired us to write this tool. Follow the [Tutorial](#tutorial) and observe how you can expose resources across **17 different AWS services** to the Internet in a matter of seconds.
 
@@ -81,6 +70,32 @@ Note: At the time of this writing, [AWS Access Analyzer](https://docs.aws.amazon
 | [SQS Queues](https://endgame.readthedocs.io/en/latest/risks/sns/)                         | ✅     | ✅                               |
 | [SNS Topics](https://endgame.readthedocs.io/en/latest/risks/sqs/)                         | ✅     | ❌                               |
 
+
+# Cheatsheet
+
+```bash
+# this will ruin your day
+endgame smash --service all --evil-principal "*"
+# This will show you how your day could have been ruined
+endgame smash --service all --evil-principal "*" --dry-run
+# Atone for your sins
+endgame smash --service all --evil-principal "*" --undo
+# Consider maybe atoning for your sins
+endgame smash --service all --evil-principal "*" --undo --dry-run
+
+# List resources available for exploitation
+endgame list-resources --service all
+# Expose specific resources
+endgame expose --service s3 --name computers-were-a-mistake
+```
+
+# Tutorial
+
+The prerequisite for an attacker running Endgame is they have access to AWS API credentials for the victim account which have privileges to update resource policies.
+
+Endgame can run in two modes, `expose` or `smash`. The less-destructive `expose` mode is surgical, updating the resource policy on a single attacker-defined resource to include a back door to a principal they control (or the internet if they're mean).
+
+`smash`, on the other hand, is more destructive (and louder). `smash` can run on a single service or all supported services. In either case, for each service it enumerates a list of resources in that region, reads the current resource policy on each, and applies a new policy which includes the "evil principal" the attacker has specified. The net effect of this is that depending on the privileges they have in the victim account, an attacker can insert dozens of back doors which are not controlled by the victim's IAM policies.
 
 ## Installation
 
@@ -140,7 +155,10 @@ export AWS_PROFILE="default"
 
 ## Step 2: Create Demo Infrastructure
 
-This program makes modifications to live AWS Infrastructure, which can vary from account to account. We have bootstrapped some of this for you using [Terraform](https://www.terraform.io/intro/index.html). **Note: This will create real AWS infrastructure and will cost you money.**
+This program makes modifications to live AWS Infrastructure, which can vary from account to account. We have bootstrapped some of this for you using [Terraform](https://www.terraform.io/intro/index.html).
+
+
+> **Warning: This will create real AWS infrastructure and will cost you money. Be sure to create this in a test account, and destroy the Terraform resources afterwards.**
 
 ```bash
 # To create the demo infrastructure
@@ -198,7 +216,9 @@ endgame expose --service iam --name test-resource-exposure --undo
 
 ## Step 6: Smash your AWS Account to Pieces
 
-* Run the following command to expose every exposable resource in your AWS account.
+* To expose every exposable resource in your AWS account, run the following command.
+
+> Warning: If you supply the argument `--evil-principal *` or the environment variable `EVIL_PRINCIPAL=*`, it will expose the account to the internet. If you do this, it is possible that an attacker could assume your privileged IAM roles, take over the other [supported resources](#supported-backdoors) present in that account, or incur a massive bill. As such, you might want to set `--evil-principal` to your own AWS user/role in another account.
 
 ```bash
 endgame smash --service all --dry-run
