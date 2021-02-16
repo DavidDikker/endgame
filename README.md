@@ -240,11 +240,12 @@ The lack of preventative tooling makes this issue more difficult for customers. 
 
 We recommend that AWS take the following measures in response:
 * Increase Access Analyzer Support to cover the resources that can be exposed via Resource-based Policy modification, AWS RAM resource sharing, and resource-specific sharing APIs (such as RDS snapshots, EBS snapshots, and EC2 AMIs)
-* Create GuardDuty rules that detect anomalous exposure of resources outside your AWS Organization.
-* Expand the current limit of 5 SCPs per AWS account to 200. (for comparison, the Azure equivalent - Azure Policies - has a limit of [200 Policy or Initiative Assignments per subscription](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-policy-limits))
-* Improve the AWS SCP service to support an "Audit" mode that would record in CloudTrail whether API calls would have been denied had the SCP not been in audit mode. This would increase customer adoption and make it easier for customers to both pilot and roll out new guardrails. (for comparison, the Azure Equivalent - Azure Policies - already [supports Audit mode](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/effects#audit).
 * Support the usage of `sts:AssumeRole` to prevent calls from outside your AWS Organization, with targeted exceptions.
 * Add IAM Condition Keys to all the IAM Actions that are used to perform Resource Exposure. These IAM Condition Keys should be used to prevent these resources from (1) being shared with the public **and** (2) being shared outside of your `aws:PrincipalOrgPath`.
+* Expand the current limit of 5 SCPs per AWS account to 200. (for comparison, the Azure equivalent - Azure Policies - has a limit of [200 Policy or Initiative Assignments per subscription](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-policy-limits))
+* Improve the AWS SCP service to support an "Audit" mode that would record in CloudTrail whether API calls would have been denied had the SCP not been in audit mode. This would increase customer adoption and make it easier for customers to both pilot and roll out new guardrails. (for comparison, the Azure Equivalent - Azure Policies - already [supports Audit mode](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/effects#audit).
+
+* Create GuardDuty rules that detect **public** exposure of resources. This may garner more immediate customer attention than Access Analyzer alerts, as they are considered high priority by Incident Response teams, and some customers have not onboarded to Access Analyzer yet.
 
 ## Recommendations to Blue Teams
 
