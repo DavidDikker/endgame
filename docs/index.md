@@ -1,14 +1,22 @@
 Endgame: Creating Backdoors in AWS
 ==================================
 
-An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or to the entire internet 😈
+An AWS Pentesting tool that lets you use one-liner commands to backdoor an AWS account's resources with a rogue AWS account - or share the resources with the entire internet 😈
 
 <p align="center">
   <img src="images/endgame.gif">
 </p>
 
 
-Endgame abuses AWS's resource permission model to grant rogue users (or the internet) access to an AWS account's resources with a single command.
+Endgame abuses AWS's resource permission model to grant rogue users (or the internet) access to an AWS account's resources with a single command. It does this through one of three methods:
+1. Modifying [resource-based policies](https://endgame.readthedocs.io/en/latest/resource-policy-primer/) (such as [S3 Bucket policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteAccessPermissionsReqd.html#bucket-policy-static-site) or [Lambda Function policies](https://docs.aws.amazon.com/lambda/latest/dg/access-control-resource-based.html#permissions-resource-xaccountinvoke))
+2. Resources that can be made public through sharing APIs (such as [Amazon Machine Images (AMIs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/sharingamis-explicit.html), [EBS disk snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html), and [RDS database snapshots](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ShareSnapshot.html))
+3. Sharing resources via [AWS Resource Access Manager (RAM)](https://docs.aws.amazon.com/ram/latest/userguide/shareable.html)
+
+Endgame was created to:
+* Push [AWS](https://endgame.readthedocs.io/en/latest/recommendations-to-aws/) to improve coverage of AWS Access Analyzer so AWS users can protect themselves.
+* Show [blue teams](https://endgame.readthedocs.io/en/latest/recommendations-to-blue-teams/) and developers what kind of damage can be done by overprivileged/leaked accounts.
+* Help red teams to demonstrate impact of their access.
 
 Endgame demonstrates (with a bit of shock and awe) how simple human errors in excessive permissions (such a granting `s3:*` access instead of `s3:GetObject`) can be abused by attackers. These are not new attacks, but AWS's ability to **detect** _and_ **prevent** these attacks falls short of what customers need to protect themselves. This is what inspired us to write this tool. Follow the [Tutorial](./tutorial.md) and observe how you can expose resources across **17 different AWS services** to the internet in a matter of seconds.
 
